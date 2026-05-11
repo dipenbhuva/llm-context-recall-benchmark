@@ -129,6 +129,8 @@ Shipped:
 - `jquery` — ~280KB / ~80K-token JS, closest to the video's setup (needs ≥100K loaded context)
 - `synthetic_recall` — generated Python corpus with similar functions and
   unique markers, useful for controlled classroom recall experiments
+- `synthetic_distractors` — generated Python corpus with near-duplicate
+  function groups for testing wrong-span retrieval
 
 If `glob` matches multiple files, they're concatenated with comment-marker
 headers (`# === path ===` / `// === path ===`) so the model sees file

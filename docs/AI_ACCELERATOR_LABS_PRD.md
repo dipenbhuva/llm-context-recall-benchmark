@@ -76,7 +76,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-002 | Done | Add prompt inspection command | `bench.py`, `bench/runner.py`, `tests/test_prompt_cli.py` | `bench.py prompt --corpus http_server --function run_cgi` prints exact model prompt. |
 | PR-003 | Done | Add prompt strategy variants | `bench.py`, `bench/runner.py`, `tests/test_prompt_cli.py` | Students compare file-first vs task-first and anchor wording. |
 | PR-004 | Done | Add synthetic recall corpus generator | `scripts/generate_synthetic_corpus.py`, `fixtures/synthetic_recall.py`, `configs/corpora/synthetic_recall.toml`, tests | Students generate controlled long-context Python corpora. |
-| PR-005 | Proposed | Add distractor corpus mode | generator, fixtures/configs | Students test near-duplicate function confusion. |
+| PR-005 | Done | Add distractor corpus mode | generator, `fixtures/synthetic_distractors.py`, configs/tests | Students test near-duplicate function confusion. |
 | PR-006 | Proposed | Make duplicate function handling visible | `bench/extract.py`, `bench.py`, tests | Multi-file corpora report skipped duplicate names. |
 | PR-007 | Ready | Add fake-response rescoring lab | `fixtures/responses/`, sample result JSON, `labs/` | Students learn scoring without needing an LLM. |
 | PR-008 | Proposed | Add result lineage metadata | `bench/runner.py`, `analysis/visualize.py`, docs | Result JSONs include enough metadata to compare runs. |
@@ -333,7 +333,7 @@ uv run pytest
 
 ## PR-005: Add Distractor Corpus Mode
 
-Status: Proposed
+Status: Done
 
 ### Goal
 
@@ -357,6 +357,13 @@ python scripts/generate_synthetic_corpus.py \
 - Ensure each target has a small unique marker in the first 20 lines.
 - Let students observe whether the model copies from a sibling function.
 
+### Implemented Files
+
+- `scripts/generate_synthetic_corpus.py`
+- `fixtures/synthetic_distractors.py`
+- `configs/corpora/synthetic_distractors.toml`
+- `tests/test_synthetic_generator.py`
+
 ### Acceptance Criteria
 
 - Distractor corpus is valid Python.
@@ -371,6 +378,19 @@ python scripts/generate_synthetic_corpus.py \
 | Generate distractors | Generator with distractor flags | File contains grouped near-duplicate functions. |
 | Extract | `bench.py extract --file fixtures/synthetic_distractors.py --all` | Lists generated functions. |
 | Unique markers | Static check over generated file | Each target has a unique marker. |
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+uv run python scripts/generate_synthetic_corpus.py --functions 40 --body-lines 30 \
+  --distractor-groups 8 --near-duplicate-rate 0.8 --out /tmp/distractors.py
+uv run python bench.py extract --file /tmp/distractors.py --all
+rg "UNIQUE_MARKER" /tmp/distractors.py
+uv run python bench.py extract --corpus synthetic_distractors
+uv run pytest
+```
 
 ## PR-006: Make Duplicate Function Handling Visible
 

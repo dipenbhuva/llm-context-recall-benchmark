@@ -1,0 +1,12 @@
+# Generated with scripts/generate_synthetic_corpus.py using distractor groups.
+# Functions in the same group share most update lines but have unique markers,
+# making wrong-span retrieval easy to spot in hallucinated output.
+
+[files]
+directory = "fixtures"
+glob = "synthetic_distractors.py"
+limit = 1
+
+[sample]
+k = 16
+seed = 42

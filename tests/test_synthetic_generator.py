@@ -57,3 +57,31 @@ def test_synthetic_generator_rejects_unextractable_body_size(tmp_path: Path) -> 
 
     assert result.returncode != 0
     assert "body_lines must be at least 20" in result.stderr
+
+
+def test_synthetic_generator_creates_distractor_groups(tmp_path: Path) -> None:
+    out = tmp_path / "distractors.py"
+    result = run_generator(
+        out,
+        "--functions", "40",
+        "--body-lines", "30",
+        "--distractor-groups", "8",
+        "--near-duplicate-rate", "0.8",
+    )
+
+    assert result.returncode == 0
+    text = out.read_text()
+    targets = extract(out)
+    assert len(targets) == 40
+    assert targets[0].name == "target_g000_m000"
+    assert targets[8].name == "target_g000_m001"
+    assert text.count("UNIQUE_MARKER_GROUP_") == 40
+    assert "group_id = 0" in text
+
+
+def test_synthetic_generator_rejects_invalid_near_duplicate_rate(tmp_path: Path) -> None:
+    out = tmp_path / "invalid.py"
+    result = run_generator(out, "--near-duplicate-rate", "1.5")
+
+    assert result.returncode != 0
+    assert "must be between 0.0 and 1.0" in result.stderr
