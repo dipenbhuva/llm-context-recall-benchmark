@@ -1,0 +1,11 @@
+# Fixture corpus for teaching why duplicate function names make a function-name
+# recall benchmark ambiguous. The extractor keeps the first occurrence and
+# reports later duplicates as skipped.
+
+[files]
+directory = "fixtures/multi_file"
+glob = "*.py"
+
+[sample]
+k = 16
+seed = 42

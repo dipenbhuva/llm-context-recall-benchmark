@@ -131,6 +131,8 @@ Shipped:
   unique markers, useful for controlled classroom recall experiments
 - `synthetic_distractors` — generated Python corpus with near-duplicate
   function groups for testing wrong-span retrieval
+- `multi_file_duplicates` — tiny two-file Python corpus for demonstrating
+  ambiguous duplicate function names
 
 If `glob` matches multiple files, they're concatenated with comment-marker
 headers (`# === path ===` / `// === path ===`) so the model sees file

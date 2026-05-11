@@ -72,6 +72,12 @@ def cmd_extract(args: argparse.Namespace) -> int:
         f"{len(source.targets)} function(s) with ≥20 body lines across "
         f"{len(source.files)} file(s) ({len(source.text):,} chars, {total_lines:,} lines)"
     )
+    if source.skipped_duplicates:
+        print(f"skipped {len(source.skipped_duplicates)} duplicate function name(s):")
+        for dup in source.skipped_duplicates:
+            print(
+                f"  {dup.name:<40}  kept={dup.kept_path.name}  skipped={dup.skipped_path.name}"
+            )
     k = args.k if args.k is not None else (corpus.sample_k if corpus else 16)
     seed = args.seed if args.seed is not None else (corpus.sample_seed if corpus else 42)
     if args.all:

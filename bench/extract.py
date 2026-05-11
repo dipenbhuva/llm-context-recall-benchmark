@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -28,12 +28,20 @@ class FunctionTarget:
 
 
 @dataclass
+class DuplicateFunction:
+    name: str
+    kept_path: Path
+    skipped_path: Path
+
+
+@dataclass
 class Source:
     """A combined corpus: one or more files concatenated for a single benchmark run."""
     files: list[Path]
     text: str                       # full text fed to the model
     targets: list[FunctionTarget]
     language: str
+    skipped_duplicates: list[DuplicateFunction] = field(default_factory=list)
 
     @property
     def display_name(self) -> str:
@@ -91,7 +99,8 @@ def load_source_glob(
 
     parts: list[str] = []
     targets: list[FunctionTarget] = []
-    seen_names: set[str] = set()
+    seen_names: dict[str, Path] = {}
+    skipped_duplicates: list[DuplicateFunction] = []
     line_offset = 0
 
     for p in paths:
@@ -107,15 +116,28 @@ def load_source_glob(
         for t in extract(p):
             if t.name in seen_names:
                 # Skip cross-file collisions — prompt would be ambiguous by name.
+                skipped_duplicates.append(
+                    DuplicateFunction(
+                        name=t.name,
+                        kept_path=seen_names[t.name],
+                        skipped_path=p,
+                    )
+                )
                 continue
-            seen_names.add(t.name)
+            seen_names[t.name] = p
             t.start_line += line_offset + header_line_count
             targets.append(t)
 
         line_offset += header.count("\n") + text.count("\n") + (0 if text.endswith("\n") else 1) + 1
 
     combined = "".join(parts)
-    return Source(files=paths, text=combined, targets=targets, language=lang)
+    return Source(
+        files=paths,
+        text=combined,
+        targets=targets,
+        language=lang,
+        skipped_duplicates=skipped_duplicates,
+    )
 
 
 def _file_header(lang: str, path: Path) -> str:

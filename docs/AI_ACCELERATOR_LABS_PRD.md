@@ -77,7 +77,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-003 | Done | Add prompt strategy variants | `bench.py`, `bench/runner.py`, `tests/test_prompt_cli.py` | Students compare file-first vs task-first and anchor wording. |
 | PR-004 | Done | Add synthetic recall corpus generator | `scripts/generate_synthetic_corpus.py`, `fixtures/synthetic_recall.py`, `configs/corpora/synthetic_recall.toml`, tests | Students generate controlled long-context Python corpora. |
 | PR-005 | Done | Add distractor corpus mode | generator, `fixtures/synthetic_distractors.py`, configs/tests | Students test near-duplicate function confusion. |
-| PR-006 | Proposed | Make duplicate function handling visible | `bench/extract.py`, `bench.py`, tests | Multi-file corpora report skipped duplicate names. |
+| PR-006 | Done | Make duplicate function handling visible | `bench/extract.py`, `bench.py`, `fixtures/multi_file/`, tests | Multi-file corpora report skipped duplicate names. |
 | PR-007 | Ready | Add fake-response rescoring lab | `fixtures/responses/`, sample result JSON, `labs/` | Students learn scoring without needing an LLM. |
 | PR-008 | Proposed | Add result lineage metadata | `bench/runner.py`, `analysis/visualize.py`, docs | Result JSONs include enough metadata to compare runs. |
 | PR-009 | Proposed | Add lab-focused dashboard summary | `analysis/visualize.py`, docs | Dashboards include a deployment-style recall report. |
@@ -394,7 +394,7 @@ uv run pytest
 
 ## PR-006: Make Duplicate Function Handling Visible
 
-Status: Proposed
+Status: Done
 
 ### Goal
 
@@ -415,7 +415,10 @@ are skipped silently after the first occurrence.
 - `fixtures/multi_file/a.py`
 - `fixtures/multi_file/b.py`
 - `configs/corpora/multi_file_duplicates.toml`
-- `labs/06_duplicate_names.md`
+- `tests/test_duplicate_extraction.py`
+
+The student lab page is deferred to PR-010 so the workbook can use a single
+consistent lab format.
 
 ### Acceptance Criteria
 
@@ -431,6 +434,17 @@ are skipped silently after the first occurrence.
 | Multi-file extract | `bench.py extract --corpus multi_file_duplicates --all` | Reports duplicate skip count. |
 | First occurrence retained | Inspect listed targets | First file's function is kept. |
 | No duplicate regression | `bench.py extract --corpus http_server --all` | No duplicate warning. |
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+uv run python bench.py extract --corpus multi_file_duplicates --all
+uv run python bench.py extract --corpus multi_file_duplicates --show repeated_name
+uv run python bench.py extract --corpus http_server --all
+uv run pytest
+```
 
 ## PR-007: Add Fake-Response Rescoring Lab
 
