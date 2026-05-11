@@ -63,23 +63,104 @@ class _Run:
     error: str | None = None
 
 
-def build_prompt(target, text: str, multi_file: bool, suppress_thinking: bool) -> str:
-    """Build the exact prompt sent to the model for one target."""
-    anchor = ANCHOR_PHRASE[target.language].format(name=target.name)
-    sig_marker = SIGNATURE_MARKER[target.language].format(name=target.name)
+@dataclass(frozen=True)
+class PromptStrategy:
+    prompt_order: str = "file-first"
+    anchor_style: str = "function-name"
+    include_signature: bool = False
+
+    def as_dict(self) -> dict[str, str | bool]:
+        return {
+            "prompt_order": self.prompt_order,
+            "anchor_style": self.anchor_style,
+            "include_signature": self.include_signature,
+        }
+
+
+def _task_text(target, multi_file: bool, suppress_thinking: bool, strategy: PromptStrategy) -> str:
     file_qualifier = (
         f" in file `{target.source_path}`" if multi_file and target.source_path else ""
     )
-    return PROMPT_TEMPLATE.format(
-        file_contents=text,
-        name=target.name,
-        file_qualifier=file_qualifier,
-        n=len(target.primary_lines),
-        anchor_phrase=anchor,
-        signature_marker=sig_marker,
-        thinking_suffix=NO_THINK_SUFFIX if suppress_thinking else "",
+    thinking_suffix = NO_THINK_SUFFIX if suppress_thinking else ""
+    source_ref = "source above" if strategy.prompt_order == "file-first" else "source below"
+
+    if strategy.anchor_style == "line-number":
+        return (
+            f"Task: reproduce verbatim the first {len(target.primary_lines)} lines of source "
+            f"starting at line {target.start_line}{file_qualifier} from the source.\n"
+            "\n"
+            "Rules:\n"
+            "- Output ONLY those lines, one per line, in original order.\n"
+            "- Preserve original indentation and characters exactly.\n"
+            "- Do NOT add commentary, line numbers, or markdown code fences.\n"
+            "- If there are blank lines in the body, include them as blank lines.\n"
+            f"{thinking_suffix}"
+        )
+
+    anchor = ANCHOR_PHRASE[target.language].format(name=target.name)
+    sig_marker = SIGNATURE_MARKER[target.language].format(name=target.name)
+    if strategy.include_signature:
+        return (
+            f"Task: reproduce verbatim the function signature and the first "
+            f"{len(target.primary_lines)} lines of the body of the function named "
+            f"`{target.name}`{file_qualifier} from the {source_ref} — i.e., the "
+            f"signature line containing `{sig_marker}` and the {len(target.primary_lines)} "
+            f"body lines {anchor}.\n"
+            "\n"
+            "Rules:\n"
+            "- Output the function signature first, then the body lines, one per line, in original order.\n"
+            "- Preserve original indentation and characters exactly.\n"
+            "- Do NOT add commentary, line numbers, or markdown code fences.\n"
+            "- If there are blank lines in the body, include them as blank lines.\n"
+            f"{thinking_suffix}"
+        )
+
+    return (
+        f"Task: reproduce verbatim the first {len(target.primary_lines)} lines of the body "
+        f"of the function named `{target.name}`{file_qualifier} from the {source_ref} — "
+        f"i.e., the {len(target.primary_lines)} lines {anchor}.\n"
+        "\n"
+        "Rules:\n"
+        "- Output ONLY those lines, one per line, in original order.\n"
+        "- Preserve original indentation and characters exactly.\n"
+        f"- Do NOT output the function signature or the line containing `{sig_marker}`.\n"
+        "- Do NOT add commentary, line numbers, or markdown code fences.\n"
+        "- If there are blank lines in the body, include them as blank lines.\n"
+        f"{thinking_suffix}"
     )
 
+
+def build_prompt(
+    target,
+    text: str,
+    multi_file: bool,
+    suppress_thinking: bool,
+    strategy: PromptStrategy | None = None,
+) -> str:
+    """Build the exact prompt sent to the model for one target."""
+    strategy = strategy or PromptStrategy()
+
+    if strategy == PromptStrategy():
+        # Preserve the original prompt byte-for-byte for default benchmark runs.
+        anchor = ANCHOR_PHRASE[target.language].format(name=target.name)
+        sig_marker = SIGNATURE_MARKER[target.language].format(name=target.name)
+        file_qualifier = (
+            f" in file `{target.source_path}`" if multi_file and target.source_path else ""
+        )
+        return PROMPT_TEMPLATE.format(
+            file_contents=text,
+            name=target.name,
+            file_qualifier=file_qualifier,
+            n=len(target.primary_lines),
+            anchor_phrase=anchor,
+            signature_marker=sig_marker,
+            thinking_suffix=NO_THINK_SUFFIX if suppress_thinking else "",
+        )
+
+    task = _task_text(target, multi_file, suppress_thinking, strategy)
+    if strategy.prompt_order == "task-first":
+        return f"{task}\n--- SOURCE ---\n\n{text}"
+    return f"{text}\n\n---\n\n{task}"
 
 def _preflight_context_check(prompt: str, cfg: ClientConfig) -> str | None:
     """Send the actual prompt with max_tokens=1 to detect context-too-small.
@@ -124,8 +205,10 @@ def run_benchmark(
     skip_preflight: bool = False,
     fail_fast_after: int | None = 2,
     relax_indent: bool = False,
+    prompt_strategy: PromptStrategy | None = None,
 ) -> list[FunctionScore]:
     text = source.text
+    prompt_strategy = prompt_strategy or PromptStrategy()
     total_lines = text.count("\n") + 1
     print(
         f"Source: {source.display_name}  ({len(text):,} chars, {total_lines:,} lines, "
@@ -161,7 +244,7 @@ def run_benchmark(
     # are the easiest mistake to make with LM Studio (TTL-driven JIT reload at
     # default 4K context). Better to abort up front.
     if not skip_preflight:
-        probe_prompt = build_prompt(chosen[0], text, multi_file, suppress_thinking)
+        probe_prompt = build_prompt(chosen[0], text, multi_file, suppress_thinking, prompt_strategy)
         print(
             f"\nPre-flight: probing context fit with a {len(probe_prompt):,}-char prompt "
             f"(max_tokens=1)...",
@@ -189,7 +272,7 @@ def run_benchmark(
     runs: list[_Run] = []
     consecutive_errors = 0
     for i, t in enumerate(chosen, 1):
-        prompt = build_prompt(t, text, multi_file, suppress_thinking)
+        prompt = build_prompt(t, text, multi_file, suppress_thinking, prompt_strategy)
         print(
             f"\n[{i}/{len(chosen)}] `{t.name}` — prompt {len(prompt):,} chars, waiting on model...",
             flush=True,
@@ -282,6 +365,7 @@ def run_benchmark(
             "temperature": cfg.temperature,
             "max_tokens": cfg.max_tokens,
             "relax_indent": relax_indent,
+            "prompt_strategy": prompt_strategy.as_dict(),
             "results": [
                 {
                     "function": sc.name,

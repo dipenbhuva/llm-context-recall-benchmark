@@ -74,7 +74,7 @@ Each row below is intended to be a PR-sized unit of work.
 | --- | --- | --- | --- | --- |
 | PR-001 | Done | Reproducible Python environment | `pyproject.toml`, `uv.lock`, `README.md`, `tests/test_smoke.py` | Students can run all non-LLM commands with one documented setup. |
 | PR-002 | Done | Add prompt inspection command | `bench.py`, `bench/runner.py`, `tests/test_prompt_cli.py` | `bench.py prompt --corpus http_server --function run_cgi` prints exact model prompt. |
-| PR-003 | Proposed | Add prompt strategy variants | `bench.py`, `bench/runner.py`, configs/docs | Students compare file-first vs task-first and anchor wording. |
+| PR-003 | Done | Add prompt strategy variants | `bench.py`, `bench/runner.py`, `tests/test_prompt_cli.py` | Students compare file-first vs task-first and anchor wording. |
 | PR-004 | Ready | Add synthetic recall corpus generator | `scripts/generate_synthetic_corpus.py`, `configs/corpora/*.toml`, `labs/` | Students generate controlled long-context Python corpora. |
 | PR-005 | Proposed | Add distractor corpus mode | generator, fixtures/configs | Students test near-duplicate function confusion. |
 | PR-006 | Proposed | Make duplicate function handling visible | `bench/extract.py`, `bench.py`, tests | Multi-file corpora report skipped duplicate names. |
@@ -200,7 +200,7 @@ uv run pytest
 
 ## PR-003: Add Prompt Strategy Variants
 
-Status: Proposed
+Status: Done
 
 ### Goal
 
@@ -245,6 +245,21 @@ python bench.py run --corpus http_server --model qwen36-35b --anchor-style line-
 | Default compatibility | Existing `bench.py run` command | Produces same prompt as current code. |
 | Prompt diff | `bench.py prompt` with two strategies | Output differs only in intended sections. |
 | Result metadata | Run with non-default strategy | JSON includes prompt strategy fields. |
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+uv run python bench.py prompt --corpus http_server --function run_cgi --prompt-order file-first
+uv run python bench.py prompt --corpus http_server --function run_cgi --prompt-order task-first
+uv run python bench.py prompt --corpus http_server --function run_cgi --anchor-style line-number
+uv run python bench.py run --file fixtures/http_server.py --model fake-model \
+  --base-url http://127.0.0.1:9 --function send_head \
+  --prompt-order task-first --anchor-style line-number \
+  --skip-preflight --fail-fast-after 1 --dump /tmp/strategy.json
+uv run pytest
+```
 
 ## PR-004: Add Synthetic Recall Corpus Generator
 

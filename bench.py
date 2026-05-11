@@ -90,7 +90,7 @@ def cmd_extract(args: argparse.Namespace) -> int:
 
 def cmd_prompt(args: argparse.Namespace) -> int:
     """Print the exact model prompt for one target without querying a model."""
-    from bench.runner import build_prompt
+    from bench.runner import PromptStrategy, build_prompt
 
     source, corpus = _resolve_source(args)
     match = next((t for t in source.targets if t.name == args.function), None)
@@ -99,11 +99,17 @@ def cmd_prompt(args: argparse.Namespace) -> int:
         return 1
 
     suppress_thinking = not args.think
+    prompt_strategy = PromptStrategy(
+        prompt_order=args.prompt_order,
+        anchor_style=args.anchor_style,
+        include_signature=args.include_signature,
+    )
     prompt = build_prompt(
         target=match,
         text=source.text,
         multi_file=len(source.files) > 1,
         suppress_thinking=suppress_thinking,
+        strategy=prompt_strategy,
     )
     source_label = corpus.name if corpus is not None else str(Path(args.file))
     source_path = str(match.source_path) if match.source_path else ""
@@ -115,6 +121,9 @@ def cmd_prompt(args: argparse.Namespace) -> int:
     print(f"# language: {match.language}")
     print(f"# prompt_chars: {len(prompt)}")
     print(f"# suppress_thinking: {str(suppress_thinking).lower()}")
+    print(f"# prompt_order: {prompt_strategy.prompt_order}")
+    print(f"# anchor_style: {prompt_strategy.anchor_style}")
+    print(f"# include_signature: {str(prompt_strategy.include_signature).lower()}")
     print("# --- prompt ---")
     print(prompt, end="" if prompt.endswith("\n") else "\n")
     return 0
@@ -122,7 +131,7 @@ def cmd_prompt(args: argparse.Namespace) -> int:
 
 def cmd_run(args: argparse.Namespace) -> int:
     from bench.config import auto_dump_path, load_model
-    from bench.runner import run_benchmark
+    from bench.runner import PromptStrategy, run_benchmark
 
     source, corpus = _resolve_source(args)
 
@@ -183,6 +192,11 @@ def cmd_run(args: argparse.Namespace) -> int:
         relax_indent = False
 
     fn_filter = args.function if args.function else None
+    prompt_strategy = PromptStrategy(
+        prompt_order=args.prompt_order,
+        anchor_style=args.anchor_style,
+        include_signature=args.include_signature,
+    )
     scores = run_benchmark(
         source=source,
         cfg=model.client,
@@ -194,6 +208,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         skip_preflight=args.skip_preflight,
         fail_fast_after=None if args.no_fail_fast else args.fail_fast_after,
         relax_indent=relax_indent,
+        prompt_strategy=prompt_strategy,
     )
     passed = sum(1 for s in scores if s.passed)
     return 0 if passed == len(scores) else 1
@@ -281,6 +296,23 @@ def build_parser() -> argparse.ArgumentParser:
     src_grp.add_argument("--corpus", help="corpus config name (configs/corpora/<name>.toml) or path")
     src_grp.add_argument("--file", help="single source file")
     p_prompt.add_argument("--function", required=True, help="target function name")
+    p_prompt.add_argument(
+        "--prompt-order",
+        choices=("file-first", "task-first"),
+        default="file-first",
+        help="where to place the task relative to the source (default: file-first)",
+    )
+    p_prompt.add_argument(
+        "--anchor-style",
+        choices=("function-name", "line-number"),
+        default="function-name",
+        help="how to identify the target span (default: function-name)",
+    )
+    p_prompt.add_argument(
+        "--include-signature",
+        action="store_true",
+        help="ask for the function signature before the body lines",
+    )
     thinking_grp = p_prompt.add_mutually_exclusive_group()
     thinking_grp.add_argument("--think", action="store_true", help="omit the /no_think suffix")
     thinking_grp.add_argument("--no-think", action="store_false", dest="think", help="append the /no_think suffix")
@@ -307,6 +339,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="JSON path for full results (default: results/<corpus>__<model>.json)",
     )
     p_run.add_argument("--function", action="append", help="repeatable; overrides sampling")
+    p_run.add_argument(
+        "--prompt-order",
+        choices=("file-first", "task-first"),
+        default="file-first",
+        help="where to place the task relative to the source (default: file-first)",
+    )
+    p_run.add_argument(
+        "--anchor-style",
+        choices=("function-name", "line-number"),
+        default="function-name",
+        help="how to identify the target span (default: function-name)",
+    )
+    p_run.add_argument(
+        "--include-signature",
+        action="store_true",
+        help="ask for the function signature before the body lines",
+    )
     p_run.add_argument("--think", action="store_true", help="allow chain-of-thought (default: suppress)")
     p_run.add_argument(
         "--skip-preflight", action="store_true",
