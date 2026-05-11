@@ -1,0 +1,20 @@
+"""Common code for GET and HEAD commands.
+
+This sends the response code and MIME headers.
+
+Return value is either a file object (which has to be copied
+to the outputfile by the caller unless the command was HEAD,
+and must be closed by the caller under all circumstances), or
+None, in which case the caller has nothing further to do.
+
+"""
+path = self.translate_path(self.path)
+f = None
+if os.path.isdir(path):
+parts = urllib.parse.urlsplit(self.path)
+if not parts.path.endswith(('/', '%2f', '%2F')):
+# redirect browser - doing basically what apache does
+self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+new_parts = (parts[0], parts[1], parts[2] + '/',
+parts[3], parts[4])
+new_url = urllib.parse.urlunsplit(new_parts)

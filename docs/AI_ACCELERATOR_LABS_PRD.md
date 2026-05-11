@@ -78,7 +78,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-004 | Done | Add synthetic recall corpus generator | `scripts/generate_synthetic_corpus.py`, `fixtures/synthetic_recall.py`, `configs/corpora/synthetic_recall.toml`, tests | Students generate controlled long-context Python corpora. |
 | PR-005 | Done | Add distractor corpus mode | generator, `fixtures/synthetic_distractors.py`, configs/tests | Students test near-duplicate function confusion. |
 | PR-006 | Done | Make duplicate function handling visible | `bench/extract.py`, `bench.py`, `fixtures/multi_file/`, tests | Multi-file corpora report skipped duplicate names. |
-| PR-007 | Ready | Add fake-response rescoring lab | `fixtures/responses/`, sample result JSON, `labs/` | Students learn scoring without needing an LLM. |
+| PR-007 | Done | Add fake-response rescoring lab | `fixtures/responses/`, `fixtures/results/`, tests | Students learn scoring without needing an LLM. |
 | PR-008 | Proposed | Add result lineage metadata | `bench/runner.py`, `analysis/visualize.py`, docs | Result JSONs include enough metadata to compare runs. |
 | PR-009 | Proposed | Add lab-focused dashboard summary | `analysis/visualize.py`, docs | Dashboards include a deployment-style recall report. |
 | PR-010 | Proposed | Add full lab workbook and instructor runbook | `labs/*.md`, `README.md` | Course can be run end to end from the repo. |
@@ -448,7 +448,7 @@ uv run pytest
 
 ## PR-007: Add Fake-Response Rescoring Lab
 
-Status: Ready
+Status: Done
 
 ### Goal
 
@@ -461,7 +461,10 @@ Teach scoring mechanics without requiring model access.
 - `fixtures/responses/send_head_hallucinated.txt`
 - `fixtures/responses/send_head_indent_changed.txt`
 - `fixtures/results/send_head_fake_results.json`
-- `labs/07_rescoring_without_llm.md`
+- `tests/test_rescore_fixtures.py`
+
+The student lab page is deferred to PR-010 so the workbook can use a single
+consistent lab format.
 
 ### Student Flow
 
@@ -488,6 +491,18 @@ python bench.py rescore fixtures/results/send_head_fake_results.json \
 | Rescore fixture | `bench.py rescore fixtures/results/send_head_fake_results.json --file fixtures/http_server.py` | Prints all fake cases. |
 | Relaxed indentation | Same command with `--relax-indent` | Indentation case improves. |
 | Missing source | Run without `--file` if stored path is invalid | Clear error message. |
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+uv run python bench.py rescore fixtures/results/send_head_fake_results.json --file fixtures/http_server.py
+uv run python bench.py rescore fixtures/results/send_head_fake_results.json --file fixtures/http_server.py --relax-indent
+uv run python bench.py rescore fixtures/results/send_head_fake_results.json --file fixtures/http_server.py >/tmp/rescore.txt
+rg "SUMMARY|send_head" /tmp/rescore.txt
+uv run pytest
+```
 
 ## PR-008: Add Result Lineage Metadata
 
