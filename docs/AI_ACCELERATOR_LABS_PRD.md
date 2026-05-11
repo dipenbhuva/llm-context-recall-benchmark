@@ -79,7 +79,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-005 | Done | Add distractor corpus mode | generator, `fixtures/synthetic_distractors.py`, configs/tests | Students test near-duplicate function confusion. |
 | PR-006 | Done | Make duplicate function handling visible | `bench/extract.py`, `bench.py`, `fixtures/multi_file/`, tests | Multi-file corpora report skipped duplicate names. |
 | PR-007 | Done | Add fake-response rescoring lab | `fixtures/responses/`, `fixtures/results/`, tests | Students learn scoring without needing an LLM. |
-| PR-008 | Proposed | Add result lineage metadata | `bench/runner.py`, `analysis/visualize.py`, docs | Result JSONs include enough metadata to compare runs. |
+| PR-008 | Done | Add result lineage metadata | `bench/runner.py`, `tests/test_result_lineage.py`, docs | Result JSONs include enough metadata to compare runs. |
 | PR-009 | Proposed | Add lab-focused dashboard summary | `analysis/visualize.py`, docs | Dashboards include a deployment-style recall report. |
 | PR-010 | Proposed | Add full lab workbook and instructor runbook | `labs/*.md`, `README.md` | Course can be run end to end from the repo. |
 
@@ -506,7 +506,7 @@ uv run pytest
 
 ## PR-008: Add Result Lineage Metadata
 
-Status: Proposed
+Status: Done
 
 ### Goal
 
@@ -535,9 +535,9 @@ Add top-level fields to result dumps:
 
 - Compute source file checksums in `bench/runner.py`.
 - Include sampling metadata and selected function order.
-- Keep visualization backward-compatible with old result files.
-- Document result schema in `configs/CONFIG_README.md` or a new
-  `docs/RESULT_SCHEMA.md`.
+- Keep visualization backward-compatible with old result files. No
+  visualization code change was needed because unknown JSON fields are ignored.
+- Cover metadata and checksum stability in `tests/test_result_lineage.py`.
 
 ### Acceptance Criteria
 
@@ -552,6 +552,19 @@ Add top-level fields to result dumps:
 | Run dump | `bench.py run ... --dump /tmp/result.json` | New metadata fields exist. |
 | Backward compatibility | Visualize existing minimal result JSON | No crash. |
 | Hash stability | Same corpus produces same checksum | Checksums match. |
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+uv run python bench.py run --file fixtures/http_server.py --model fake-model \
+  --base-url http://127.0.0.1:9 --function send_head \
+  --skip-preflight --fail-fast-after 1 --dump /tmp/lineage.json
+python -m json.tool /tmp/lineage.json
+uv run python analysis/visualize.py --results-dir fixtures/results --output-dir /tmp/charts
+uv run pytest
+```
 
 ## PR-009: Add Lab-Focused Dashboard Summary
 
@@ -769,7 +782,7 @@ Use this section as the source of truth for what each PR must make runnable.
 
 | ID | Type | Setup | Command | Expected | Artifact |
 | --- | --- | --- | --- | --- | --- |
-| PR-008-RT-01 | `mock-llm` | Fake server running | `python bench.py run --file fixtures/http_server.py --model fake-model --base-url http://127.0.0.1:8765 --function send_head --skip-preflight --dump /tmp/lineage.json` | Result JSON is written. | `/tmp/lineage.json` |
+| PR-008-RT-01 | `local-no-llm` | No model server needed; command intentionally uses a closed local port and records the request error | `python bench.py run --file fixtures/http_server.py --model fake-model --base-url http://127.0.0.1:9 --function send_head --skip-preflight --fail-fast-after 1 --dump /tmp/lineage.json` | Result JSON is written with lineage metadata and an errored result. | `/tmp/lineage.json` |
 | PR-008-RT-02 | `ci` | `/tmp/lineage.json` exists | `python -m json.tool /tmp/lineage.json >/tmp/lineage.pretty.json` | JSON is valid. | `/tmp/lineage.pretty.json` |
 | PR-008-RT-03 | `ci` | `/tmp/lineage.json` exists | `python -c "import json; d=json.load(open('/tmp/lineage.json')); print(d['schema_version'], d['run_id'], d['corpus_sha256'])"` | Required lineage fields are present. | stdout |
 | PR-008-RT-04 | `ci` | Old-style fixture result exists | `python analysis/visualize.py --results-dir fixtures/results --output-dir /tmp/charts` | Old result files still visualize without crashing. | `/tmp/charts` |

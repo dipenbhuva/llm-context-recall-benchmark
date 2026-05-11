@@ -2,9 +2,14 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import subprocess
+import sys
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
+from uuid import uuid4
 
 from .client import ClientConfig, chat_complete
 from .extract import Source, extract, load_source_glob, stratified_sample
@@ -51,6 +56,8 @@ SIGNATURE_MARKER = {
 # to skip chain-of-thought. Ignored by non-reasoning models. For a pure recall
 # benchmark, reasoning wastes tokens and risks drift — so suppress by default.
 NO_THINK_SUFFIX = "\n/no_think\n"
+RESULT_SCHEMA_VERSION = 2
+PROMPT_TEMPLATE_ID = "context-recall-v2"
 
 
 @dataclass
@@ -192,6 +199,27 @@ def _preflight_context_check(prompt: str, cfg: ClientConfig) -> str | None:
 def _is_context_error(msg: str) -> bool:
     m = msg.lower()
     return any(s in m for s in ("context length", "n_ctx", "n_keep", "too long", "exceeds"))
+
+
+def _git_sha() -> str | None:
+    repo_root = Path(__file__).resolve().parent.parent
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip() or None
+
+
+def _source_sha256(source: Source) -> str:
+    return hashlib.sha256(source.text.encode("utf-8")).hexdigest()
 
 
 def run_benchmark(
@@ -359,6 +387,16 @@ def run_benchmark(
     if dump_path:
         dump_path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
+            "schema_version": RESULT_SCHEMA_VERSION,
+            "run_id": str(uuid4()),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "git_sha": _git_sha(),
+            "python_version": sys.version.split()[0],
+            "corpus_sha256": _source_sha256(source),
+            "prompt_template_id": PROMPT_TEMPLATE_ID,
+            "sample_k": k,
+            "sample_seed": seed,
+            "selected_functions": [t.name for t in chosen],
             "files": [str(p) for p in source.files],
             "model": cfg.model,
             "base_url": cfg.base_url,
