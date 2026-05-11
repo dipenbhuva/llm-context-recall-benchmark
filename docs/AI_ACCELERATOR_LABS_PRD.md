@@ -80,7 +80,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-006 | Done | Make duplicate function handling visible | `bench/extract.py`, `bench.py`, `fixtures/multi_file/`, tests | Multi-file corpora report skipped duplicate names. |
 | PR-007 | Done | Add fake-response rescoring lab | `fixtures/responses/`, `fixtures/results/`, tests | Students learn scoring without needing an LLM. |
 | PR-008 | Done | Add result lineage metadata | `bench/runner.py`, `tests/test_result_lineage.py`, docs | Result JSONs include enough metadata to compare runs. |
-| PR-009 | Proposed | Add lab-focused dashboard summary | `analysis/visualize.py`, docs | Dashboards include a deployment-style recall report. |
+| PR-009 | Done | Add lab-focused dashboard summary | `analysis/visualize.py`, `tests/test_visualize.py`, docs | Dashboards include a deployment-style recall report. |
 | PR-010 | Proposed | Add full lab workbook and instructor runbook | `labs/*.md`, `README.md` | Course can be run end to end from the repo. |
 
 ## PR-001: Reproducible Python Environment
@@ -568,7 +568,7 @@ uv run pytest
 
 ## PR-009: Add Lab-Focused Dashboard Summary
 
-Status: Proposed
+Status: Done
 
 ### Goal
 
@@ -602,6 +602,18 @@ Make the visualization answer the questions students are asked in the labs.
 | Empty results dir | `python analysis/visualize.py --results-dir /tmp/empty` | Clear no-results message. |
 | Existing result JSON | `python analysis/visualize.py` | Existing charts plus new summary. |
 | Old result JSON | Visualize old schema | No crash. |
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+uv run python analysis/visualize.py --results-dir fixtures/results --output-dir /tmp/lab-charts
+test -f /tmp/lab-charts/http_server/summary.html
+rg "Lab summary|Worst Failure|fake-responses" /tmp/lab-charts/http_server/summary.html
+uv run python analysis/visualize.py --results-dir /tmp/empty-results --output-dir /tmp/empty-charts || true
+uv run pytest
+```
 
 ## PR-010: Full Lab Workbook and Instructor Runbook
 

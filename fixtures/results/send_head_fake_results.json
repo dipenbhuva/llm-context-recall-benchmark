@@ -13,28 +13,48 @@
       "case": "perfect",
       "response": "        \"\"\"Common code for GET and HEAD commands.\n\n        This sends the response code and MIME headers.\n\n        Return value is either a file object (which has to be copied\n        to the outputfile by the caller unless the command was HEAD,\n        and must be closed by the caller under all circumstances), or\n        None, in which case the caller has nothing further to do.\n\n        \"\"\"\n        path = self.translate_path(self.path)\n        f = None\n        if os.path.isdir(path):\n            parts = urllib.parse.urlsplit(self.path)\n            if not parts.path.endswith(('/', '%2f', '%2F')):\n                # redirect browser - doing basically what apache does\n                self.send_response(HTTPStatus.MOVED_PERMANENTLY)\n                new_parts = (parts[0], parts[1], parts[2] + '/',\n                             parts[3], parts[4])\n                new_url = urllib.parse.urlunsplit(new_parts)",
       "latency_s": 0.0,
-      "prompt_chars": 0
+      "prompt_chars": 0,
+      "passed": true,
+      "primary_matched": 20,
+      "primary_total": 20,
+      "hallucinated": 0,
+      "bonus_matched": 0
     },
     {
       "function": "send_head",
       "case": "truncated",
       "response": "        \"\"\"Common code for GET and HEAD commands.\n\n        This sends the response code and MIME headers.\n\n        Return value is either a file object (which has to be copied",
       "latency_s": 0.0,
-      "prompt_chars": 0
+      "prompt_chars": 0,
+      "passed": false,
+      "primary_matched": 5,
+      "primary_total": 20,
+      "hallucinated": 0,
+      "bonus_matched": 0
     },
     {
       "function": "send_head",
       "case": "hallucinated",
       "response": "        \"\"\"Common code for GET and HEAD commands.\n\n        This sends the response code and MIME headers.\n\n        Return value is either a file object (which has to be copied\n        to the outputfile by the caller unless the command was HEAD,\n        and must be closed by the caller under all circumstances), or\n        None, in which case the caller has nothing further to do.\n\n        \"\"\"\n        made_up_header = \"not in source\"\n        self.send_header(\"X-Hallucinated\", \"yes\")\n        path = self.translate_path(self.path)\n        f = None\n        if os.path.isdir(path):\n            parts = urllib.parse.urlsplit(self.path)\n            if not parts.path.endswith(('/', '%2f', '%2F')):",
       "latency_s": 0.0,
-      "prompt_chars": 0
+      "prompt_chars": 0,
+      "passed": true,
+      "primary_matched": 15,
+      "primary_total": 20,
+      "hallucinated": 2,
+      "bonus_matched": 0
     },
     {
       "function": "send_head",
       "case": "indent_changed",
       "response": "\"\"\"Common code for GET and HEAD commands.\n\nThis sends the response code and MIME headers.\n\nReturn value is either a file object (which has to be copied\nto the outputfile by the caller unless the command was HEAD,\nand must be closed by the caller under all circumstances), or\nNone, in which case the caller has nothing further to do.\n\n\"\"\"\npath = self.translate_path(self.path)\nf = None\nif os.path.isdir(path):\nparts = urllib.parse.urlsplit(self.path)\nif not parts.path.endswith(('/', '%2f', '%2F')):\n# redirect browser - doing basically what apache does\nself.send_response(HTTPStatus.MOVED_PERMANENTLY)\nnew_parts = (parts[0], parts[1], parts[2] + '/',\nparts[3], parts[4])\nnew_url = urllib.parse.urlunsplit(new_parts)",
       "latency_s": 0.0,
-      "prompt_chars": 0
+      "prompt_chars": 0,
+      "passed": false,
+      "primary_matched": 3,
+      "primary_total": 20,
+      "hallucinated": 17,
+      "bonus_matched": 0
     }
   ]
 }

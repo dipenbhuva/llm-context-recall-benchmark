@@ -138,6 +138,80 @@ def _chart_height(*, content_rows: int, n_legend_entries: int, base: int = 420) 
 # --- charts ---------------------------------------------------------------
 
 
+def lab_summary(runs: list[Run], colors: dict[str, str]):
+    """Table-oriented summary for lab reports and go/no-go discussion."""
+    import plotly.graph_objects as go
+
+    rows = []
+    for r in runs:
+        results = r.data["results"]
+        real = [x for x in results if not x.get("error")]
+        matched = sum(x.get("primary_matched", 0) for x in real)
+        total = sum(x.get("primary_total", 0) for x in real)
+        passed = sum(1 for x in real if x.get("passed"))
+        halluc = sum(x.get("hallucinated", 0) for x in real)
+        errors = len(results) - len(real)
+        worst = min(
+            real,
+            key=lambda x: (x.get("primary_matched", 0), -x.get("hallucinated", 0)),
+            default=None,
+        )
+        strategy = r.data.get("prompt_strategy") or {}
+        rows.append({
+            "run": r.path.stem,
+            "model": r.model,
+            "strategy": strategy.get("prompt_order", "file-first"),
+            "anchor": strategy.get("anchor_style", "function-name"),
+            "seed": r.data.get("sample_seed", ""),
+            "prompt_id": r.data.get("prompt_template_id", "legacy"),
+            "score": f"{matched}/{total}" if total else "0/0",
+            "pass": f"{passed}/{len(real)}" + (f" + {errors} err" if errors else ""),
+            "halluc": halluc,
+            "failure": (
+                f"{worst.get('function')} ({worst.get('primary_matched')}/{worst.get('primary_total')})"
+                if worst else "all errored"
+            ),
+            "hash": str(r.data.get("corpus_sha256", ""))[:10],
+        })
+
+    if not rows:
+        return None
+
+    headers = [
+        "Run", "Model", "Prompt", "Anchor", "Seed", "Prompt ID",
+        "Recall", "Pass/Error", "Halluc.", "Worst Failure", "Corpus Hash",
+    ]
+    keys = [
+        "run", "model", "strategy", "anchor", "seed", "prompt_id",
+        "score", "pass", "halluc", "failure", "hash",
+    ]
+
+    fig = go.Figure(data=[go.Table(
+        header=dict(
+            values=headers,
+            fill_color="#f0f3f6",
+            align="left",
+            font=dict(size=12, color="#222"),
+        ),
+        cells=dict(
+            values=[[row[k] for row in rows] for k in keys],
+            fill_color=[
+                [colors.get(row["model"], "#ddd") for row in rows],
+                ["#fff"] * len(rows),
+            ] + [["#fff"] * len(rows) for _ in keys[2:]],
+            align="left",
+            font=dict(size=11, color="#222"),
+            height=28,
+        ),
+    )])
+    fig.update_layout(
+        title="Lab summary · metadata, aggregate recall, and worst failure",
+        height=_chart_height(content_rows=len(rows), n_legend_entries=0, base=360),
+        margin=dict(l=20, r=20, t=70, b=30),
+    )
+    return fig
+
+
 def leaderboard(runs: list[Run], colors: dict[str, str]):
     """Horizontal bar chart, one trace per run (so each is independently
     toggleable from the legend). Sorted best → worst by primary lines matched.
@@ -363,6 +437,11 @@ PAGE_CSS = """
 
 CHART_PAGES = [
     # (slug, title, caption, chart_fn_key)
+    ("summary", "Lab summary",
+     "A report-oriented view of each run: model, prompt strategy, seed, aggregate recall, "
+     "errors, hallucinations, and the worst function. Use this page first when deciding "
+     "which model or prompt variant deserves deeper inspection.",
+     "summary"),
     ("leaderboard", "Leaderboard",
      "Total primary lines matched across all tested functions, sorted so the top bar is the best run. "
      "Each model has its own legend entry — click to hide/show, double-click to isolate. "
@@ -445,6 +524,7 @@ def write_dashboard(group: str, runs: list[Run], out_dir: Path) -> list[tuple[st
     positions = resolve_line_positions(runs)
 
     figs = {
+        "summary": lab_summary(runs, colors),
         "leaderboard": leaderboard(runs, colors),
         "per_function": per_function_bars(runs, colors),
         "recall_vs_position": recall_vs_depth(runs, colors, positions),
