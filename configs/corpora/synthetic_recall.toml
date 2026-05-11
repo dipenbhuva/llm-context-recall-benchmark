@@ -1,0 +1,12 @@
+# Generated with scripts/generate_synthetic_corpus.py. This corpus is small
+# enough for fast classroom iteration but still has enough similar functions to
+# demonstrate exact recall, sampling, and prompt inspection.
+
+[files]
+directory = "fixtures"
+glob = "synthetic_recall.py"
+limit = 1
+
+[sample]
+k = 16
+seed = 42

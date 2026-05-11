@@ -75,7 +75,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-001 | Done | Reproducible Python environment | `pyproject.toml`, `uv.lock`, `README.md`, `tests/test_smoke.py` | Students can run all non-LLM commands with one documented setup. |
 | PR-002 | Done | Add prompt inspection command | `bench.py`, `bench/runner.py`, `tests/test_prompt_cli.py` | `bench.py prompt --corpus http_server --function run_cgi` prints exact model prompt. |
 | PR-003 | Done | Add prompt strategy variants | `bench.py`, `bench/runner.py`, `tests/test_prompt_cli.py` | Students compare file-first vs task-first and anchor wording. |
-| PR-004 | Ready | Add synthetic recall corpus generator | `scripts/generate_synthetic_corpus.py`, `configs/corpora/*.toml`, `labs/` | Students generate controlled long-context Python corpora. |
+| PR-004 | Done | Add synthetic recall corpus generator | `scripts/generate_synthetic_corpus.py`, `fixtures/synthetic_recall.py`, `configs/corpora/synthetic_recall.toml`, tests | Students generate controlled long-context Python corpora. |
 | PR-005 | Proposed | Add distractor corpus mode | generator, fixtures/configs | Students test near-duplicate function confusion. |
 | PR-006 | Proposed | Make duplicate function handling visible | `bench/extract.py`, `bench.py`, tests | Multi-file corpora report skipped duplicate names. |
 | PR-007 | Ready | Add fake-response rescoring lab | `fixtures/responses/`, sample result JSON, `labs/` | Students learn scoring without needing an LLM. |
@@ -263,7 +263,7 @@ uv run pytest
 
 ## PR-004: Add Synthetic Recall Corpus Generator
 
-Status: Ready
+Status: Done
 
 ### Goal
 
@@ -291,11 +291,15 @@ python bench.py run --file fixtures/synthetic_recall.py --model qwen36-35b -k 16
 - Support deterministic output with `--seed`.
 - Optionally insert filler blocks between functions to increase context depth.
 
-### Proposed Files
+### Implemented Files
 
 - `scripts/generate_synthetic_corpus.py`
+- `fixtures/synthetic_recall.py`
 - `configs/corpora/synthetic_recall.toml`
-- `labs/04_synthetic_recall.md`
+- `tests/test_synthetic_generator.py`
+
+The student lab page is deferred to PR-010 so the workbook can use a single
+consistent lab format.
 
 ### Acceptance Criteria
 
@@ -311,6 +315,21 @@ python bench.py run --file fixtures/synthetic_recall.py --model qwen36-35b -k 16
 | Extract generated corpus | `python bench.py extract --file /tmp/synth.py --all` | Lists 10 functions. |
 | Determinism | Generate twice with same seed and compare hash | Hashes match. |
 | Minimum body length | Generate with body lines 20 | All functions are extractable. |
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+uv run python scripts/generate_synthetic_corpus.py --functions 10 --body-lines 30 --seed 7 --out /tmp/synth_a.py
+uv run python bench.py extract --file /tmp/synth_a.py --all
+uv run python scripts/generate_synthetic_corpus.py --functions 10 --body-lines 30 --seed 7 --out /tmp/synth_b.py
+shasum -a 256 /tmp/synth_a.py /tmp/synth_b.py
+uv run python scripts/generate_synthetic_corpus.py --functions 200 --body-lines 30 --filler-lines 20 --out /tmp/synth_long.py
+uv run python bench.py extract --file /tmp/synth_long.py
+uv run python bench.py extract --corpus synthetic_recall
+uv run pytest
+```
 
 ## PR-005: Add Distractor Corpus Mode
 

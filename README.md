@@ -127,6 +127,8 @@ seed = 42
 Shipped:
 - `http_server` — single ~50KB Python file, fits any context, fast iteration
 - `jquery` — ~280KB / ~80K-token JS, closest to the video's setup (needs ≥100K loaded context)
+- `synthetic_recall` — generated Python corpus with similar functions and
+  unique markers, useful for controlled classroom recall experiments
 
 If `glob` matches multiple files, they're concatenated with comment-marker
 headers (`# === path ===` / `// === path ===`) so the model sees file
