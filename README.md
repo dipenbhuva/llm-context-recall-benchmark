@@ -282,3 +282,5 @@ Keep temperature at 0. Default `max_tokens=6000` to leave room for reasoning mod
 - `analysis/visualize.py` — builds Plotly HTML dashboards from `results/*.json`
   (see [`analysis/VIZ_README.md`](analysis/VIZ_README.md) for chart-by-chart details)
 - `smoke_test.py` — end-to-end sanity check without an LLM
+- `docs/AI_ACCELERATOR_LABS_PRD.md` — PR-sized roadmap for building the
+  AI accelerator labs around this code-recall benchmark
