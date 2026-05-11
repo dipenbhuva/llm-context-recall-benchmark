@@ -9,16 +9,19 @@ under long context, not just named-entity lookup.
 ## Install
 
 This project uses [uv](https://docs.astral.sh/uv/) for Python environment management.
+Python 3.11+ is required because config loading uses the standard-library
+`tomllib` module.
 
 ```
-# Create a venv in .venv/ and install the deps from requirements.txt
-uv venv
-uv pip install -r requirements.txt
+# Create a venv in .venv/ and install project + dev dependencies
+uv venv --python 3.11
+uv sync --dev
 ```
 
 Run any project script via `uv run` (no `source .venv/bin/activate` needed):
 
 ```
+uv run pytest
 uv run python bench.py run --corpus http_server --model qwen36-35b
 uv run python analysis/visualize.py
 uv run python smoke_test.py
@@ -28,11 +31,12 @@ If you'd rather activate the venv:
 
 ```
 source .venv/bin/activate
-python3 bench.py run --corpus http_server --model qwen36-35b
+python bench.py run --corpus http_server --model qwen36-35b
 ```
 
-The rest of this README writes commands as `python3 …` for brevity — prepend
-`uv run ` if your venv isn't active.
+The rest of this README writes commands as `python3 …` for brevity; use
+`uv run python …` if your venv is not active, and make sure `python3` is
+Python 3.11 or newer.
 
 ## Quick start
 

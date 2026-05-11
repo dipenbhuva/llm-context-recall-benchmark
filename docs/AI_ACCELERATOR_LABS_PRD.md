@@ -72,7 +72,7 @@ Each row below is intended to be a PR-sized unit of work.
 
 | PR ID | Status | Title | Primary files | Student-facing output |
 | --- | --- | --- | --- | --- |
-| PR-001 | Ready | Reproducible Python environment | `pyproject.toml`, `uv.lock`, `README.md` | Students can run all non-LLM commands with one documented setup. |
+| PR-001 | Done | Reproducible Python environment | `pyproject.toml`, `uv.lock`, `README.md`, `tests/test_smoke.py` | Students can run all non-LLM commands with one documented setup. |
 | PR-002 | Ready | Add prompt inspection command | `bench.py`, `bench/runner.py`, tests | `bench.py prompt --corpus http_server --function run_cgi` prints exact model prompt. |
 | PR-003 | Proposed | Add prompt strategy variants | `bench.py`, `bench/runner.py`, configs/docs | Students compare file-first vs task-first and anchor wording. |
 | PR-004 | Ready | Add synthetic recall corpus generator | `scripts/generate_synthetic_corpus.py`, `configs/corpora/*.toml`, `labs/` | Students generate controlled long-context Python corpora. |
@@ -85,7 +85,7 @@ Each row below is intended to be a PR-sized unit of work.
 
 ## PR-001: Reproducible Python Environment
 
-Status: Ready
+Status: Done
 
 ### Goal
 
@@ -94,8 +94,8 @@ Make the repository runnable by students without interpreter ambiguity.
 ### Proposed Changes
 
 - Add `pyproject.toml` with Python `>=3.11`.
-- Move dependencies from `requirements.txt` into project metadata or keep
-  `requirements.txt` as a compatibility export.
+- Move dependencies from `requirements.txt` into project metadata while keeping
+  `requirements.txt` as a compatibility reference.
 - Add `pytest` as a dev dependency.
 - Convert or wrap `smoke_test.py` so it can run through `pytest`.
 - Update `README.md` setup commands to force Python 3.11 or newer.
@@ -125,6 +125,19 @@ uv run python bench.py extract --corpus jquery
 | Smoke test | `uv run python smoke_test.py` | All smoke checks pass. |
 | Python corpus extraction | `uv run python bench.py extract --corpus http_server --all` | Lists 11 functions. |
 | JS corpus extraction | `uv run python bench.py extract --corpus jquery` | Lists sampled JS targets. |
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+uv venv --python 3.11 && uv sync --dev
+uv run python --version
+uv run python smoke_test.py
+uv run pytest
+uv run python bench.py extract --corpus http_server --all
+uv run python bench.py extract --corpus jquery
+```
 
 ## PR-002: Add Prompt Inspection Command
 
