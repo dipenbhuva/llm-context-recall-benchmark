@@ -88,6 +88,38 @@ def cmd_extract(args: argparse.Namespace) -> int:
 # --- run ------------------------------------------------------------------
 
 
+def cmd_prompt(args: argparse.Namespace) -> int:
+    """Print the exact model prompt for one target without querying a model."""
+    from bench.runner import build_prompt
+
+    source, corpus = _resolve_source(args)
+    match = next((t for t in source.targets if t.name == args.function), None)
+    if match is None:
+        print(f"function {args.function!r} not found", file=sys.stderr)
+        return 1
+
+    suppress_thinking = not args.think
+    prompt = build_prompt(
+        target=match,
+        text=source.text,
+        multi_file=len(source.files) > 1,
+        suppress_thinking=suppress_thinking,
+    )
+    source_label = corpus.name if corpus is not None else str(Path(args.file))
+    source_path = str(match.source_path) if match.source_path else ""
+    print(f"# source: {source_label}")
+    print(f"# files: {len(source.files)}")
+    print(f"# function: {match.name}")
+    print(f"# source_path: {source_path}")
+    print(f"# start_line: {match.start_line}")
+    print(f"# language: {match.language}")
+    print(f"# prompt_chars: {len(prompt)}")
+    print(f"# suppress_thinking: {str(suppress_thinking).lower()}")
+    print("# --- prompt ---")
+    print(prompt, end="" if prompt.endswith("\n") else "\n")
+    return 0
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     from bench.config import auto_dump_path, load_model
     from bench.runner import run_benchmark
@@ -242,6 +274,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_ex.add_argument("--all", action="store_true", help="list every extracted function, not a sample")
     p_ex.add_argument("--show", metavar="NAME", help="print expected primary+bonus lines for one function")
     p_ex.set_defaults(func=cmd_extract)
+
+    # --- prompt -------------------------------------------------------------
+    p_prompt = sub.add_parser("prompt", help="print the exact prompt for one target without calling a model")
+    src_grp = p_prompt.add_mutually_exclusive_group()
+    src_grp.add_argument("--corpus", help="corpus config name (configs/corpora/<name>.toml) or path")
+    src_grp.add_argument("--file", help="single source file")
+    p_prompt.add_argument("--function", required=True, help="target function name")
+    thinking_grp = p_prompt.add_mutually_exclusive_group()
+    thinking_grp.add_argument("--think", action="store_true", help="omit the /no_think suffix")
+    thinking_grp.add_argument("--no-think", action="store_false", dest="think", help="append the /no_think suffix")
+    p_prompt.set_defaults(func=cmd_prompt, think=False)
 
     # --- run ----------------------------------------------------------------
     p_run = sub.add_parser("run", help="run the benchmark against an OpenAI-compatible endpoint")

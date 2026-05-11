@@ -63,7 +63,8 @@ class _Run:
     error: str | None = None
 
 
-def _build_prompt(target, text: str, multi_file: bool, suppress_thinking: bool) -> str:
+def build_prompt(target, text: str, multi_file: bool, suppress_thinking: bool) -> str:
+    """Build the exact prompt sent to the model for one target."""
     anchor = ANCHOR_PHRASE[target.language].format(name=target.name)
     sig_marker = SIGNATURE_MARKER[target.language].format(name=target.name)
     file_qualifier = (
@@ -160,7 +161,7 @@ def run_benchmark(
     # are the easiest mistake to make with LM Studio (TTL-driven JIT reload at
     # default 4K context). Better to abort up front.
     if not skip_preflight:
-        probe_prompt = _build_prompt(chosen[0], text, multi_file, suppress_thinking)
+        probe_prompt = build_prompt(chosen[0], text, multi_file, suppress_thinking)
         print(
             f"\nPre-flight: probing context fit with a {len(probe_prompt):,}-char prompt "
             f"(max_tokens=1)...",
@@ -188,7 +189,7 @@ def run_benchmark(
     runs: list[_Run] = []
     consecutive_errors = 0
     for i, t in enumerate(chosen, 1):
-        prompt = _build_prompt(t, text, multi_file, suppress_thinking)
+        prompt = build_prompt(t, text, multi_file, suppress_thinking)
         print(
             f"\n[{i}/{len(chosen)}] `{t.name}` — prompt {len(prompt):,} chars, waiting on model...",
             flush=True,

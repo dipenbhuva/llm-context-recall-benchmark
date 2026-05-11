@@ -73,7 +73,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR ID | Status | Title | Primary files | Student-facing output |
 | --- | --- | --- | --- | --- |
 | PR-001 | Done | Reproducible Python environment | `pyproject.toml`, `uv.lock`, `README.md`, `tests/test_smoke.py` | Students can run all non-LLM commands with one documented setup. |
-| PR-002 | Ready | Add prompt inspection command | `bench.py`, `bench/runner.py`, tests | `bench.py prompt --corpus http_server --function run_cgi` prints exact model prompt. |
+| PR-002 | Done | Add prompt inspection command | `bench.py`, `bench/runner.py`, `tests/test_prompt_cli.py` | `bench.py prompt --corpus http_server --function run_cgi` prints exact model prompt. |
 | PR-003 | Proposed | Add prompt strategy variants | `bench.py`, `bench/runner.py`, configs/docs | Students compare file-first vs task-first and anchor wording. |
 | PR-004 | Ready | Add synthetic recall corpus generator | `scripts/generate_synthetic_corpus.py`, `configs/corpora/*.toml`, `labs/` | Students generate controlled long-context Python corpora. |
 | PR-005 | Proposed | Add distractor corpus mode | generator, fixtures/configs | Students test near-duplicate function confusion. |
@@ -141,7 +141,7 @@ uv run python bench.py extract --corpus jquery
 
 ## PR-002: Add Prompt Inspection Command
 
-Status: Ready
+Status: Done
 
 ### Goal
 
@@ -186,6 +186,17 @@ python bench.py prompt --corpus http_server --function run_cgi --no-think
 | Missing function | `python bench.py prompt --corpus http_server --function nope` | Exits non-zero with clear error. |
 | Single-file mode | `python bench.py prompt --file fixtures/http_server.py --function send_head` | Prints prompt for `send_head`. |
 | No model call | Run with no model server running | Command still succeeds. |
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+uv run python bench.py prompt --corpus http_server --function run_cgi
+uv run python bench.py prompt --file fixtures/http_server.py --function send_head
+uv run python bench.py prompt --corpus http_server --function nope
+uv run pytest
+```
 
 ## PR-003: Add Prompt Strategy Variants
 
