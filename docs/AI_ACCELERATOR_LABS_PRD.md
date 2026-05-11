@@ -81,7 +81,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-007 | Done | Add fake-response rescoring lab | `fixtures/responses/`, `fixtures/results/`, tests | Students learn scoring without needing an LLM. |
 | PR-008 | Done | Add result lineage metadata | `bench/runner.py`, `tests/test_result_lineage.py`, docs | Result JSONs include enough metadata to compare runs. |
 | PR-009 | Done | Add lab-focused dashboard summary | `analysis/visualize.py`, `tests/test_visualize.py`, docs | Dashboards include a deployment-style recall report. |
-| PR-010 | Proposed | Add full lab workbook and instructor runbook | `labs/*.md`, `README.md` | Course can be run end to end from the repo. |
+| PR-010 | Done | Add full lab workbook and instructor runbook | `labs/*.md`, `README.md`, `tests/test_lab_docs.py` | Course can be run end to end from the repo. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -617,7 +617,7 @@ uv run pytest
 
 ## PR-010: Full Lab Workbook and Instructor Runbook
 
-Status: Proposed
+Status: Done
 
 ### Goal
 
@@ -672,6 +672,16 @@ Students produce a short model comparison report:
 - A student can start from a fresh clone and complete non-LLM labs locally.
 - LLM-dependent labs clearly mark model/server prerequisites.
 - Instructor runbook includes estimated runtime and troubleshooting notes.
+
+### Verification
+
+Verified on 2026-05-11:
+
+```bash
+rg "Objective|Commands to run|Verification checklist" labs
+rg "bench.py extract|bench.py prompt|bench.py rescore" labs
+uv run pytest
+```
 
 ## Runtime Test Contract
 

@@ -60,6 +60,7 @@ configs/
   models/         model identifier and per-model knobs — one TOML per model
 fixtures/         source files to test against (jquery.js, http_server.py, …)
 results/          JSON dumps from every run, auto-named <corpus>__<model>.json
+labs/             student workbook for the AI accelerator code-recall labs
 analysis/
   visualize.py    Plotly dashboard builder
   charts/         generated HTML output (gitignored)
@@ -292,5 +293,6 @@ Keep temperature at 0. Default `max_tokens=6000` to leave room for reasoning mod
 - `analysis/visualize.py` — builds Plotly HTML dashboards from `results/*.json`
   (see [`analysis/VIZ_README.md`](analysis/VIZ_README.md) for chart-by-chart details)
 - `smoke_test.py` — end-to-end sanity check without an LLM
+- `labs/README.md` — student lab sequence for learning this benchmark end to end
 - `docs/AI_ACCELERATOR_LABS_PRD.md` — PR-sized roadmap for building the
   AI accelerator labs around this code-recall benchmark
