@@ -82,6 +82,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-008 | Done | Add result lineage metadata | `bench/runner.py`, `tests/test_result_lineage.py`, docs | Result JSONs include enough metadata to compare runs. |
 | PR-009 | Done | Add lab-focused dashboard summary | `analysis/visualize.py`, `tests/test_visualize.py`, docs | Dashboards include a deployment-style recall report. |
 | PR-010 | Done | Add full lab workbook and instructor runbook | `labs/*.md`, `README.md`, `tests/test_lab_docs.py` | Course can be run end to end from the repo. |
+| PR-011 | Done | Add deterministic mock LLM server | `tests/fake_openai_server.py`, `tests/test_fake_openai_server.py`, docs | `mock-llm` runtime tests exercise the full HTTP/run/dump path without a real model. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -709,10 +710,10 @@ Runtime test types:
 | `mock-llm` | Uses a deterministic local fake OpenAI-compatible server. | Yes, after the fake server exists |
 | `live-llm` | Requires LM Studio, llama.cpp, Ollama, or a hosted model key. | No, manual/instructor only |
 
-Future implementation note: add a deterministic fake OpenAI-compatible server
-for `mock-llm` tests. It should live under `tests/` or `fixtures/` and return a
-known response so `bench.py run` can exercise the full HTTP/runtime/dump path
-without GPUs or API keys.
+The repo includes `tests/fake_openai_server.py`, a deterministic
+OpenAI-compatible server for `mock-llm` tests. It returns a known response so
+`bench.py run` can exercise the full HTTP/runtime/dump path without GPUs or API
+keys.
 
 Proposed command shape:
 
@@ -825,6 +826,18 @@ Use this section as the source of truth for what each PR must make runnable.
 | PR-010-RT-02 | `ci` | Lab docs exist | `rg "bench.py extract|bench.py prompt|bench.py rescore" labs` | Labs include concrete repo commands. | stdout |
 | PR-010-RT-03 | `local-no-llm` | Fresh checkout | Follow `labs/README.md` non-LLM path | Non-LLM labs complete without model server or API key. | student outputs |
 | PR-010-RT-04 | `live-llm` | Instructor model/server ready | Follow `labs/instructor_runbook.md` live-model path | Live benchmark labs produce result JSON and charts. | `results/*.json`, `analysis/charts/` |
+
+### PR-011 Runtime Tests
+
+These tests prove the benchmark can run through an OpenAI-compatible HTTP
+boundary without a real LLM.
+
+| ID | Type | Setup | Command | Expected | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| PR-011-RT-01 | `mock-llm` | Start fake server in one terminal: `python tests/fake_openai_server.py --port 8765 --response-file fixtures/responses/send_head_perfect.txt --record-jsonl /tmp/fake-requests.jsonl` | `python bench.py run --file fixtures/http_server.py --model fake-model --base-url http://127.0.0.1:8765 --function send_head --skip-preflight --dump /tmp/fake-run.json` | Run exits zero and prints `=== send_head`, `[PASS]`, and `matched=20/20`. | `/tmp/fake-run.json` |
+| PR-011-RT-02 | `ci` | `/tmp/fake-run.json` exists from PR-011-RT-01 | `python -m json.tool /tmp/fake-run.json >/tmp/fake-run.pretty.json` | Result JSON is valid. | `/tmp/fake-run.pretty.json` |
+| PR-011-RT-03 | `ci` | `/tmp/fake-requests.jsonl` exists from PR-011-RT-01 | `python -c "import json; r=json.loads(open('/tmp/fake-requests.jsonl').readline()); print(r['model'], r['stream'], r['messages'][0]['role'])"` | Prints `fake-model False user`. | stdout |
+| PR-011-RT-04 | `ci` | Test environment active | `uv run pytest tests/test_fake_openai_server.py` | Full mock server regression passes. | none |
 
 ## Shared Verification Commands
 

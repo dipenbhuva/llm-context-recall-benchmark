@@ -39,6 +39,27 @@ uv run python bench.py rescore fixtures/results/send_head_fake_results.json --fi
 uv run python analysis/visualize.py --results-dir fixtures/results --output-dir /tmp/lab-charts
 ```
 
+Mock-LLM path:
+
+```bash
+uv run python tests/fake_openai_server.py \
+  --port 8765 \
+  --response-file fixtures/responses/send_head_perfect.txt \
+  --record-jsonl /tmp/fake-requests.jsonl
+```
+
+Run this benchmark command in a second terminal:
+
+```bash
+uv run python bench.py run \
+  --file fixtures/http_server.py \
+  --model fake-model \
+  --base-url http://127.0.0.1:8765 \
+  --function send_head \
+  --skip-preflight \
+  --dump /tmp/fake-run.json
+```
+
 Live-model path:
 
 ```bash
@@ -50,6 +71,7 @@ uv run python analysis/visualize.py
 ## Expected output
 
 - No-LLM labs complete in a few minutes.
+- Mock-LLM runs print `=== send_head`, `[PASS]`, and write `/tmp/fake-run.json`.
 - Live-model labs produce result JSON under `results/`.
 - Visualization writes dashboards under `analysis/charts/`.
 
@@ -68,4 +90,5 @@ short final model report.
 
 - The instructor can run `uv run pytest`.
 - The instructor can complete the no-LLM path.
+- The instructor can run the mock-LLM path before using a real model.
 - Live-model prerequisites are clear before class starts.

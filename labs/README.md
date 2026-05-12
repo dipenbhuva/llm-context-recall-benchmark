@@ -12,6 +12,13 @@ uv sync --dev
 uv run pytest
 ```
 
+For a full HTTP-path check without a real model, start the deterministic fake
+OpenAI-compatible server:
+
+```bash
+uv run python tests/fake_openai_server.py --port 8765 --response-file fixtures/responses/send_head_perfect.txt
+```
+
 ## Lab Sequence
 
 1. `01_ground_truth_extraction.md` — inspect extracted functions and expected lines.
