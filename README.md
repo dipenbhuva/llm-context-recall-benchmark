@@ -232,6 +232,9 @@ python3 bench.py rescore results/http_server__qwen36-35b.json
 # Compare two result dumps for A/B reports
 python3 bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json
 
+# Validate result JSON before reporting
+python3 bench.py validate fixtures/results/compare_candidate.json --strict
+
 # Run deterministic lab runtime checks
 python3 scripts/run_lab_runtime_checks.py --json /tmp/lab-runtime-report.json
 
@@ -294,6 +297,7 @@ Keep temperature at 0. Default `max_tokens=6000` to leave room for reasoning mod
 - `bench/extract.py` — function extraction + multi-file source aggregation
 - `bench/client.py` — tiny OpenAI-compatible client
 - `bench/compare.py` — result JSON comparison for prompt/model A/B reports
+- `bench/validate.py` — result JSON contract and lineage validation
 - `bench/scorer.py` — LCS alignment, line classification, pass/fail
 - `bench/report.py` — ANSI color rendering
 - `bench/runner.py` — orchestration: prompt assembly, query, score, dump

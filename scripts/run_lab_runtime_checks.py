@@ -257,6 +257,17 @@ def build_checks(work_dir: Path) -> list[RuntimeCheck]:
             ),
             stdout_contains=("Primary matched", "send_head", "pass no -> yes"),
         ),
+        RuntimeCheck(
+            "PR-015-RT-01",
+            "ci",
+            "Strict-validate a schema-v2 result fixture",
+            command_runner(
+                "bench.py", "validate",
+                "fixtures/results/compare_candidate.json",
+                "--strict",
+            ),
+            stdout_contains=("PASS", "0 errors, 0 warnings"),
+        ),
     ]
 
 

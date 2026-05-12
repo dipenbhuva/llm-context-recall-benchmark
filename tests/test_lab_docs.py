@@ -22,7 +22,7 @@ def lab_files() -> list[Path]:
 def test_lab_workbook_files_use_required_structure() -> None:
     paths = lab_files()
 
-    assert len(paths) == 9
+    assert len(paths) == 10
     for path in paths:
         text = path.read_text()
         for heading in REQUIRED_HEADINGS:

@@ -295,6 +295,28 @@ def cmd_compare(args: argparse.Namespace) -> int:
     return 0 if has_common else 1
 
 
+# --- validate -------------------------------------------------------------
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    """Validate result dump structure and lineage metadata."""
+    import json
+
+    from bench.validate import load_result_file, render_validation, validate_result
+
+    path = Path(args.dump)
+    issues = validate_result(load_result_file(path), strict=args.strict)
+    print(render_validation(path, issues))
+    if args.json:
+        json_path = Path(args.json)
+        json_path.parent.mkdir(parents=True, exist_ok=True)
+        json_path.write_text(
+            json.dumps([issue.as_dict() for issue in issues], indent=2),
+            encoding="utf-8",
+        )
+    return 1 if any(issue.level == "error" for issue in issues) else 0
+
+
 # --- argparse -------------------------------------------------------------
 
 
@@ -423,6 +445,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_cmp.add_argument("left", help="baseline result JSON")
     p_cmp.add_argument("right", help="candidate result JSON")
     p_cmp.set_defaults(func=cmd_compare)
+
+    # --- validate ----------------------------------------------------------
+    p_val = sub.add_parser("validate", help="validate a benchmark result JSON dump")
+    p_val.add_argument("dump", help="result JSON to validate")
+    p_val.add_argument(
+        "--strict",
+        action="store_true",
+        help="require schema_version=2 and full lineage metadata",
+    )
+    p_val.add_argument("--json", help="write validation issues as JSON")
+    p_val.set_defaults(func=cmd_validate)
 
     return p
 

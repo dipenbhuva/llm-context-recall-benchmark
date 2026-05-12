@@ -36,6 +36,7 @@ uv run python scripts/run_lab_runtime_checks.py --json /tmp/lab-runtime-report.j
 7. `07_rescoring_without_llm.md` — learn scoring from fake responses.
 8. `08_result_lineage.md` — inspect reproducibility metadata in result JSON.
 9. `09_final_model_report.md` — write a model comparison report.
+10. `10_result_contract_validation.md` — validate result JSON contracts.
 
-Labs 1, 2, 4, 6, 7, and 8 can run without any model server. Labs 3, 5, and 9
-include optional live-model sections.
+Labs 1, 2, 4, 6, 7, 8, and 10 can run without any model server. Labs 3, 5,
+and 9 include optional live-model sections.
