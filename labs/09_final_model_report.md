@@ -30,6 +30,7 @@ uv run python analysis/visualize.py
 Without live model access:
 
 ```bash
+uv run python bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json
 uv run python analysis/visualize.py --results-dir fixtures/results --output-dir /tmp/lab-charts
 open /tmp/lab-charts/index.html
 ```
@@ -39,6 +40,7 @@ open /tmp/lab-charts/index.html
 - Result JSONs exist for model runs.
 - Dashboard pages include Lab summary, Leaderboard, Per-function score, and
   Recall vs position.
+- Compare output includes aggregate and per-function deltas between two runs.
 - A final report can cite concrete matched-line and hallucination numbers.
 
 ## Student task
@@ -63,5 +65,6 @@ Write a report with these sections:
 ## Verification checklist
 
 - You can produce or inspect a result JSON.
+- You can compare two result JSONs.
 - You can open a dashboard summary.
 - Your report includes a concrete recommendation backed by metrics.

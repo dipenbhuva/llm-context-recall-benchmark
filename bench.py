@@ -278,6 +278,23 @@ def cmd_rescore(args: argparse.Namespace) -> int:
     return 0
 
 
+# --- compare --------------------------------------------------------------
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    """Compare two result dumps without re-scoring or re-querying a model."""
+    from bench.compare import index_results, load_result_file, render_comparison
+
+    left = Path(args.left)
+    right = Path(args.right)
+    left_data = load_result_file(left)
+    right_data = load_result_file(right)
+    has_common = bool(set(index_results(left_data)) & set(index_results(right_data)))
+    report = render_comparison(left, left_data, right, right_data)
+    print(report)
+    return 0 if has_common else 1
+
+
 # --- argparse -------------------------------------------------------------
 
 
@@ -400,6 +417,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="enforce verbatim indentation (overrides dump's setting)",
     )
     p_rs.set_defaults(func=cmd_rescore)
+
+    # --- compare -----------------------------------------------------------
+    p_cmp = sub.add_parser("compare", help="compare two benchmark result JSON dumps")
+    p_cmp.add_argument("left", help="baseline result JSON")
+    p_cmp.add_argument("right", help="candidate result JSON")
+    p_cmp.set_defaults(func=cmd_compare)
 
     return p
 

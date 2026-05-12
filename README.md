@@ -229,6 +229,9 @@ python3 bench.py extract --corpus http_server --show is_cgi   # ground truth
 # Re-score a prior dump without re-querying
 python3 bench.py rescore results/http_server__qwen36-35b.json
 
+# Compare two result dumps for A/B reports
+python3 bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json
+
 # Build Plotly dashboards comparing every run in results/
 python3 analysis/visualize.py
 # -> analysis/charts/<corpus>.html + analysis/charts/index.html
@@ -287,6 +290,7 @@ Keep temperature at 0. Default `max_tokens=6000` to leave room for reasoning mod
 - `bench/config.py` — TOML config loader
 - `bench/extract.py` — function extraction + multi-file source aggregation
 - `bench/client.py` — tiny OpenAI-compatible client
+- `bench/compare.py` — result JSON comparison for prompt/model A/B reports
 - `bench/scorer.py` — LCS alignment, line classification, pass/fail
 - `bench/report.py` — ANSI color rendering
 - `bench/runner.py` — orchestration: prompt assembly, query, score, dump

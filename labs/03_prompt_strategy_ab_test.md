@@ -31,6 +31,13 @@ Optional live-model run:
 ```bash
 uv run python bench.py run --corpus http_server --model qwen36-35b --function run_cgi --prompt-order file-first --dump /tmp/file-first-run.json
 uv run python bench.py run --corpus http_server --model qwen36-35b --function run_cgi --prompt-order task-first --dump /tmp/task-first-run.json
+uv run python bench.py compare /tmp/file-first-run.json /tmp/task-first-run.json
+```
+
+No-LLM comparison fixture:
+
+```bash
+uv run python bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json
 ```
 
 ## Expected output
@@ -39,11 +46,12 @@ uv run python bench.py run --corpus http_server --model qwen36-35b --function ru
 - `task-first` prompt body starts with `Task:`.
 - Line-number anchor mentions the source line directly.
 - Result JSON records `prompt_strategy`.
+- Compare output shows aggregate and per-function deltas.
 
 ## Student task
 
-Compare the two prompt files. If you have model access, compare the two result
-JSON files and note latency, matched lines, and hallucinations.
+Compare the two prompt files. Then compare either the fixture result JSONs or
+your live result JSONs and note latency, matched lines, and hallucinations.
 
 ## Reflection questions
 
@@ -55,4 +63,5 @@ JSON files and note latency, matched lines, and hallucinations.
 
 - You can generate both prompt orders.
 - You can explain which prompt is cache-friendly.
+- You can run `bench.py compare` on two result dumps.
 - Optional: you can find `prompt_strategy` in a run dump.

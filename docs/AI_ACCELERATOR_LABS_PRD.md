@@ -83,6 +83,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-009 | Done | Add lab-focused dashboard summary | `analysis/visualize.py`, `tests/test_visualize.py`, docs | Dashboards include a deployment-style recall report. |
 | PR-010 | Done | Add full lab workbook and instructor runbook | `labs/*.md`, `README.md`, `tests/test_lab_docs.py` | Course can be run end to end from the repo. |
 | PR-011 | Done | Add deterministic mock LLM server | `tests/fake_openai_server.py`, `tests/test_fake_openai_server.py`, docs | `mock-llm` runtime tests exercise the full HTTP/run/dump path without a real model. |
+| PR-012 | Done | Add result comparison CLI | `bench/compare.py`, `bench.py`, `fixtures/results/compare_*.json`, tests/docs | Students can compare two run dumps for prompt/model A/B reports. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -838,6 +839,17 @@ boundary without a real LLM.
 | PR-011-RT-02 | `ci` | `/tmp/fake-run.json` exists from PR-011-RT-01 | `python -m json.tool /tmp/fake-run.json >/tmp/fake-run.pretty.json` | Result JSON is valid. | `/tmp/fake-run.pretty.json` |
 | PR-011-RT-03 | `ci` | `/tmp/fake-requests.jsonl` exists from PR-011-RT-01 | `python -c "import json; r=json.loads(open('/tmp/fake-requests.jsonl').readline()); print(r['model'], r['stream'], r['messages'][0]['role'])"` | Prints `fake-model False user`. | stdout |
 | PR-011-RT-04 | `ci` | Test environment active | `uv run pytest tests/test_fake_openai_server.py` | Full mock server regression passes. | none |
+
+### PR-012 Runtime Tests
+
+These tests make prompt/model A/B comparisons reproducible from existing result
+JSONs.
+
+| ID | Type | Setup | Command | Expected | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| PR-012-RT-01 | `ci` | Comparison fixtures exist | `python bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json >/tmp/compare.txt` | Prints aggregate metric deltas and per-function matched/hallucination deltas. | `/tmp/compare.txt` |
+| PR-012-RT-02 | `ci` | `/tmp/compare.txt` exists from PR-012-RT-01 | `rg "Primary matched" /tmp/compare.txt && rg "send_head" /tmp/compare.txt && rg "pass no -> yes" /tmp/compare.txt` | Comparison output includes report-ready evidence. | stdout |
+| PR-012-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_compare_cli.py` | Compare CLI regression passes. | none |
 
 ## Shared Verification Commands
 

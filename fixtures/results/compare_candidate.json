@@ -1,0 +1,44 @@
+{
+  "schema_version": 2,
+  "run_id": "fixture-compare-candidate",
+  "created_at": "2026-05-12T00:00:00+00:00",
+  "files": [
+    "fixtures/http_server.py"
+  ],
+  "model": "fixture-candidate",
+  "base_url": "offline",
+  "temperature": 0.0,
+  "max_tokens": 0,
+  "relax_indent": false,
+  "prompt_strategy": {
+    "prompt_order": "task-first",
+    "anchor_style": "function-name",
+    "include_signature": false
+  },
+  "results": [
+    {
+      "function": "send_head",
+      "passed": true,
+      "error": null,
+      "primary_matched": 20,
+      "primary_total": 20,
+      "hallucinated": 0,
+      "bonus_matched": 0,
+      "latency_s": 1.5,
+      "prompt_chars": 49859,
+      "response": ""
+    },
+    {
+      "function": "list_directory",
+      "passed": true,
+      "error": null,
+      "primary_matched": 18,
+      "primary_total": 20,
+      "hallucinated": 1,
+      "bonus_matched": 0,
+      "latency_s": 1.6,
+      "prompt_chars": 49859,
+      "response": ""
+    }
+  ]
+}
