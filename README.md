@@ -304,3 +304,5 @@ Keep temperature at 0. Default `max_tokens=6000` to leave room for reasoning mod
 - `labs/README.md` — student lab sequence for learning this benchmark end to end
 - `docs/AI_ACCELERATOR_LABS_PRD.md` — PR-sized roadmap for building the
   AI accelerator labs around this code-recall benchmark
+- `.github/workflows/lab-runtime-checks.yml` — CI for pytest and deterministic
+  lab runtime checks

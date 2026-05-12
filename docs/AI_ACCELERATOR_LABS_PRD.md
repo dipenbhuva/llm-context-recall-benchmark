@@ -85,6 +85,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-011 | Done | Add deterministic mock LLM server | `tests/fake_openai_server.py`, `tests/test_fake_openai_server.py`, docs | `mock-llm` runtime tests exercise the full HTTP/run/dump path without a real model. |
 | PR-012 | Done | Add result comparison CLI | `bench/compare.py`, `bench.py`, `fixtures/results/compare_*.json`, tests/docs | Students can compare two run dumps for prompt/model A/B reports. |
 | PR-013 | Done | Add lab runtime check runner | `scripts/run_lab_runtime_checks.py`, `tests/test_runtime_checks.py`, docs | Instructors can run deterministic lab checks from one command and archive a JSON report. |
+| PR-014 | Done | Add CI workflow for lab checks | `.github/workflows/lab-runtime-checks.yml`, `tests/test_ci_workflow.py`, docs | Pull requests run pytest and deterministic lab runtime checks automatically. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -864,6 +865,16 @@ after dependency changes, or in CI.
 | PR-013-RT-03 | `local-no-llm` | Test environment active | `python scripts/run_lab_runtime_checks.py --skip-mock --json /tmp/lab-runtime-report.json` | All deterministic no-model checks pass. | `/tmp/lab-runtime-report.json` |
 | PR-013-RT-04 | `mock-llm` | Test environment active | `python scripts/run_lab_runtime_checks.py --json /tmp/lab-runtime-report.json` | All deterministic checks including fake HTTP model pass. | `/tmp/lab-runtime-report.json` |
 | PR-013-RT-05 | `ci` | Test environment active | `uv run pytest tests/test_runtime_checks.py` | Runtime-check runner regression passes. | none |
+
+### PR-014 Runtime Tests
+
+These tests keep the lab contract enforced on pull requests.
+
+| ID | Type | Setup | Command | Expected | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| PR-014-RT-01 | `ci` | GitHub Actions enabled | Open or update a pull request | Workflow runs `uv run pytest` and `scripts/run_lab_runtime_checks.py`. | GitHub Actions run |
+| PR-014-RT-02 | `ci` | Workflow file exists | `uv run pytest tests/test_ci_workflow.py` | Workflow regression test passes. | none |
+| PR-014-RT-03 | `ci` | Workflow has completed | Download `lab-runtime-report` artifact from the Actions run | JSON report contains deterministic runtime-check results. | `lab-runtime-report` artifact |
 
 ## Shared Verification Commands
 

@@ -96,4 +96,5 @@ short final model report.
 - The instructor can run `uv run python scripts/run_lab_runtime_checks.py`.
 - The instructor can complete the no-LLM path.
 - The instructor can run the mock-LLM path before using a real model.
+- GitHub Actions runs the lab runtime workflow on pull requests.
 - Live-model prerequisites are clear before class starts.
