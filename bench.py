@@ -363,6 +363,21 @@ def cmd_report(args: argparse.Namespace) -> int:
     return 0
 
 
+# --- diagnose -------------------------------------------------------------
+
+
+def cmd_diagnose(args: argparse.Namespace) -> int:
+    """Classify result failures into a compact taxonomy."""
+    from bench.diagnose import load_and_diagnose, render_diagnosis, write_diagnosis_json
+
+    path = Path(args.dump)
+    diagnoses = load_and_diagnose(path)
+    print(render_diagnosis(path, diagnoses))
+    if args.json:
+        write_diagnosis_json(Path(args.json), diagnoses)
+    return 0
+
+
 # --- argparse -------------------------------------------------------------
 
 
@@ -518,6 +533,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="return success even if strict result validation fails",
     )
     p_report.set_defaults(func=cmd_report)
+
+    # --- diagnose ----------------------------------------------------------
+    p_diag = sub.add_parser("diagnose", help="classify result failures by failure mode")
+    p_diag.add_argument("dump", help="result JSON to diagnose")
+    p_diag.add_argument("--json", help="write diagnosis entries as JSON")
+    p_diag.set_defaults(func=cmd_diagnose)
 
     return p
 

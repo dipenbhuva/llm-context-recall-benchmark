@@ -282,6 +282,21 @@ def build_checks(work_dir: Path) -> list[RuntimeCheck]:
             stdout_contains=("Report written to",),
             required_artifacts=(work_dir / "model-report.md",),
         ),
+        RuntimeCheck(
+            "PR-017-RT-01",
+            "ci",
+            "Diagnose fake-response failure modes",
+            command_runner(
+                "bench.py", "diagnose",
+                "fixtures/results/send_head_fake_results.json",
+            ),
+            stdout_contains=(
+                "perfect_recall",
+                "truncated_or_incomplete",
+                "pass_with_hallucination",
+                "format_or_wrong_span",
+            ),
+        ),
     ]
 
 

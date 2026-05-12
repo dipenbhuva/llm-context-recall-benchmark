@@ -37,6 +37,7 @@ uv run python bench.py extract --corpus synthetic_recall
 uv run python bench.py extract --corpus synthetic_distractors
 uv run python bench.py extract --corpus multi_file_duplicates --all
 uv run python bench.py rescore fixtures/results/send_head_fake_results.json --file fixtures/http_server.py
+uv run python bench.py diagnose fixtures/results/send_head_fake_results.json
 uv run python bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json
 uv run python bench.py validate fixtures/results/compare_candidate.json --strict
 uv run python bench.py report fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out /tmp/model-report.md
@@ -76,6 +77,7 @@ uv run python analysis/visualize.py
 
 - No-LLM labs complete in a few minutes.
 - Mock-LLM runs print `=== send_head`, `[PASS]`, and write `/tmp/fake-run.json`.
+- Diagnosis runs print failure category counts.
 - Compare runs print aggregate and per-function deltas.
 - Validation runs pass strict schema checks on schema-v2 fixtures.
 - Report generation writes `/tmp/model-report.md`.

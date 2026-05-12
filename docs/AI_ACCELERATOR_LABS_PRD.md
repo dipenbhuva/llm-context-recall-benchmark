@@ -88,6 +88,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-014 | Done | Add CI workflow for lab checks | `.github/workflows/lab-runtime-checks.yml`, `tests/test_ci_workflow.py`, docs | Pull requests run pytest and deterministic lab runtime checks automatically. |
 | PR-015 | Done | Add result contract validation | `bench/validate.py`, `bench.py`, `labs/10_result_contract_validation.md`, tests/docs | Students can validate result JSON and enforce schema-v2 lineage metadata. |
 | PR-016 | Done | Add Markdown model report generator | `bench/model_report.py`, `bench.py`, `tests/test_model_report_cli.py`, docs | Students can generate a production-style model report from result JSON. |
+| PR-017 | Done | Add failure diagnosis CLI | `bench/diagnose.py`, `bench.py`, `tests/test_diagnose_cli.py`, docs | Students can classify result failures into production-relevant categories. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -901,6 +902,17 @@ fixtures.
 | PR-016-RT-02 | `ci` | `/tmp/model-report.md` exists | `rg "Model Recall Report|Recommendation|Baseline Comparison" /tmp/model-report.md` | Report contains required sections. | stdout |
 | PR-016-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_model_report_cli.py` | Report CLI regression passes. | none |
 
+### PR-017 Runtime Tests
+
+These tests turn scored results into a failure taxonomy that students can use
+for debugging and deployment review.
+
+| ID | Type | Setup | Command | Expected | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| PR-017-RT-01 | `ci` | Fake-response result fixture exists | `python bench.py diagnose fixtures/results/send_head_fake_results.json` | Prints categories including `perfect_recall`, `truncated_or_incomplete`, `pass_with_hallucination`, and `format_or_wrong_span`. | stdout |
+| PR-017-RT-02 | `ci` | Fake-response result fixture exists | `python bench.py diagnose fixtures/results/send_head_fake_results.json --json /tmp/diagnosis.json` | Writes machine-readable diagnosis entries. | `/tmp/diagnosis.json` |
+| PR-017-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_diagnose_cli.py` | Diagnosis CLI regression passes. | none |
+
 ## Shared Verification Commands
 
 These commands should remain valid as the lab buildout progresses.
@@ -927,6 +939,9 @@ python bench.py extract --file /tmp/synth.py --all
 
 # Rescoring lab, after PR-007
 python bench.py rescore fixtures/results/send_head_fake_results.json --file fixtures/http_server.py
+
+# Failure diagnosis, after PR-017
+python bench.py diagnose fixtures/results/send_head_fake_results.json
 
 # Result validation, after PR-015
 python bench.py validate fixtures/results/compare_candidate.json --strict
