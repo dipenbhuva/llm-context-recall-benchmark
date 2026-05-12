@@ -87,6 +87,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-013 | Done | Add lab runtime check runner | `scripts/run_lab_runtime_checks.py`, `tests/test_runtime_checks.py`, docs | Instructors can run deterministic lab checks from one command and archive a JSON report. |
 | PR-014 | Done | Add CI workflow for lab checks | `.github/workflows/lab-runtime-checks.yml`, `tests/test_ci_workflow.py`, docs | Pull requests run pytest and deterministic lab runtime checks automatically. |
 | PR-015 | Done | Add result contract validation | `bench/validate.py`, `bench.py`, `labs/10_result_contract_validation.md`, tests/docs | Students can validate result JSON and enforce schema-v2 lineage metadata. |
+| PR-016 | Done | Add Markdown model report generator | `bench/model_report.py`, `bench.py`, `tests/test_model_report_cli.py`, docs | Students can generate a production-style model report from result JSON. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -889,6 +890,17 @@ reports rely on them.
 | PR-015-RT-03 | `ci` | Legacy fake-response fixture exists | `python bench.py validate fixtures/results/send_head_fake_results.json --strict` | Exits non-zero because strict mode requires schema v2. | stdout |
 | PR-015-RT-04 | `ci` | Test environment active | `uv run pytest tests/test_validate_cli.py` | Validate CLI regression passes. | none |
 
+### PR-016 Runtime Tests
+
+These tests generate the final student deliverable from committed result
+fixtures.
+
+| ID | Type | Setup | Command | Expected | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| PR-016-RT-01 | `ci` | Comparison fixtures exist | `python bench.py report fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out /tmp/model-report.md` | Writes a Markdown report with validation, metrics, comparison, and recommendation sections. | `/tmp/model-report.md` |
+| PR-016-RT-02 | `ci` | `/tmp/model-report.md` exists | `rg "Model Recall Report|Recommendation|Baseline Comparison" /tmp/model-report.md` | Report contains required sections. | stdout |
+| PR-016-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_model_report_cli.py` | Report CLI regression passes. | none |
+
 ## Shared Verification Commands
 
 These commands should remain valid as the lab buildout progresses.
@@ -918,6 +930,9 @@ python bench.py rescore fixtures/results/send_head_fake_results.json --file fixt
 
 # Result validation, after PR-015
 python bench.py validate fixtures/results/compare_candidate.json --strict
+
+# Model report, after PR-016
+python bench.py report fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out /tmp/model-report.md
 
 # Visualization, after at least one result JSON exists
 python analysis/visualize.py

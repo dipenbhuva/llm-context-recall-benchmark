@@ -19,6 +19,7 @@ def test_runtime_check_runner_lists_checks() -> None:
     assert "PR-011-RT-01" in result.stdout
     assert "PR-012-RT-01" in result.stdout
     assert "PR-015-RT-01" in result.stdout
+    assert "PR-016-RT-01" in result.stdout
 
 
 def test_runtime_check_runner_can_run_one_check(tmp_path: Path) -> None:

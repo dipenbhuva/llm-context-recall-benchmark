@@ -268,6 +268,20 @@ def build_checks(work_dir: Path) -> list[RuntimeCheck]:
             ),
             stdout_contains=("PASS", "0 errors, 0 warnings"),
         ),
+        RuntimeCheck(
+            "PR-016-RT-01",
+            "ci",
+            "Generate a Markdown model report from fixture results",
+            command_runner(
+                "bench.py", "report",
+                "fixtures/results/compare_candidate.json",
+                "--baseline", "fixtures/results/compare_baseline.json",
+                "--out", work_dir / "model-report.md",
+                artifacts=[work_dir / "model-report.md"],
+            ),
+            stdout_contains=("Report written to",),
+            required_artifacts=(work_dir / "model-report.md",),
+        ),
     ]
 
 

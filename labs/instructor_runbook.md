@@ -39,6 +39,7 @@ uv run python bench.py extract --corpus multi_file_duplicates --all
 uv run python bench.py rescore fixtures/results/send_head_fake_results.json --file fixtures/http_server.py
 uv run python bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json
 uv run python bench.py validate fixtures/results/compare_candidate.json --strict
+uv run python bench.py report fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out /tmp/model-report.md
 uv run python analysis/visualize.py --results-dir fixtures/results --output-dir /tmp/lab-charts
 ```
 
@@ -77,6 +78,7 @@ uv run python analysis/visualize.py
 - Mock-LLM runs print `=== send_head`, `[PASS]`, and write `/tmp/fake-run.json`.
 - Compare runs print aggregate and per-function deltas.
 - Validation runs pass strict schema checks on schema-v2 fixtures.
+- Report generation writes `/tmp/model-report.md`.
 - Runtime check runner writes `/tmp/lab-runtime-report.json`.
 - Live-model labs produce result JSON under `results/`.
 - Visualization writes dashboards under `analysis/charts/`.

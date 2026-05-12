@@ -25,12 +25,14 @@ With live model access:
 uv run python bench.py run --corpus http_server --model qwen36-35b
 uv run python bench.py run --corpus synthetic_recall --model qwen36-35b
 uv run python analysis/visualize.py
+uv run python bench.py report results/http_server__qwen36-35b.json --out /tmp/model-report.md
 ```
 
 Without live model access:
 
 ```bash
 uv run python bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json
+uv run python bench.py report fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out /tmp/model-report.md
 uv run python analysis/visualize.py --results-dir fixtures/results --output-dir /tmp/lab-charts
 open /tmp/lab-charts/index.html
 ```
@@ -41,11 +43,13 @@ open /tmp/lab-charts/index.html
 - Dashboard pages include Lab summary, Leaderboard, Per-function score, and
   Recall vs position.
 - Compare output includes aggregate and per-function deltas between two runs.
-- A final report can cite concrete matched-line and hallucination numbers.
+- `/tmp/model-report.md` contains validation status, metrics, worst failures,
+  baseline comparison, and a recommendation.
 
 ## Student task
 
-Write a report with these sections:
+Generate `/tmp/model-report.md`, then review whether the recommendation is
+justified. If you edit it manually, keep these sections:
 
 - Corpus and model configs used
 - Prompt strategy used
@@ -66,5 +70,6 @@ Write a report with these sections:
 
 - You can produce or inspect a result JSON.
 - You can compare two result JSONs.
+- You can generate a Markdown model report.
 - You can open a dashboard summary.
 - Your report includes a concrete recommendation backed by metrics.

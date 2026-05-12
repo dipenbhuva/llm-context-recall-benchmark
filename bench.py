@@ -317,6 +317,52 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 1 if any(issue.level == "error" for issue in issues) else 0
 
 
+# --- report ---------------------------------------------------------------
+
+
+def cmd_report(args: argparse.Namespace) -> int:
+    """Generate a Markdown model report from one result dump."""
+    import json
+
+    from bench.model_report import ReportPolicy, render_model_report
+    from bench.validate import validate_result
+
+    result_path = Path(args.dump)
+    result_data = json.loads(result_path.read_text(encoding="utf-8"))
+    baseline_path = Path(args.baseline) if args.baseline else None
+    baseline_data = (
+        json.loads(baseline_path.read_text(encoding="utf-8"))
+        if baseline_path is not None
+        else None
+    )
+    policy = ReportPolicy(
+        min_recall=args.min_recall,
+        max_hallucinated=args.max_hallucinated,
+        max_errors=args.max_errors,
+        min_functions=args.min_functions,
+    )
+    report = render_model_report(
+        result_path,
+        result_data,
+        baseline_path=baseline_path,
+        baseline_data=baseline_data,
+        policy=policy,
+    )
+    if args.out:
+        out_path = Path(args.out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(report, encoding="utf-8")
+        print(f"Report written to {out_path}")
+    else:
+        print(report, end="")
+
+    has_errors = any(issue.level == "error" for issue in validate_result(result_data, strict=True))
+    if has_errors and not args.allow_invalid:
+        print("strict validation failed; pass --allow-invalid to keep this report", file=sys.stderr)
+        return 1
+    return 0
+
+
 # --- argparse -------------------------------------------------------------
 
 
@@ -456,6 +502,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_val.add_argument("--json", help="write validation issues as JSON")
     p_val.set_defaults(func=cmd_validate)
+
+    # --- report ------------------------------------------------------------
+    p_report = sub.add_parser("report", help="generate a Markdown model report from result JSON")
+    p_report.add_argument("dump", help="candidate result JSON")
+    p_report.add_argument("--baseline", help="optional baseline result JSON for comparison")
+    p_report.add_argument("--out", help="write Markdown report to this path")
+    p_report.add_argument("--min-recall", type=float, default=0.80)
+    p_report.add_argument("--max-hallucinated", type=int, default=0)
+    p_report.add_argument("--max-errors", type=int, default=0)
+    p_report.add_argument("--min-functions", type=int, default=8)
+    p_report.add_argument(
+        "--allow-invalid",
+        action="store_true",
+        help="return success even if strict result validation fails",
+    )
+    p_report.set_defaults(func=cmd_report)
 
     return p
 
