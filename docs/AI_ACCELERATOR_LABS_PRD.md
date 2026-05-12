@@ -710,7 +710,7 @@ Runtime test types:
 | --- | --- | --- |
 | `ci` | Fully deterministic and quick. No model server, no API keys. | Yes |
 | `local-no-llm` | Runs locally without model access, but may write `/tmp` files or generated fixtures. | Usually |
-| `mock-llm` | Uses a deterministic local fake OpenAI-compatible server. | Yes, after the fake server exists |
+| `mock-llm` | Uses the deterministic local fake OpenAI-compatible server. | Yes |
 | `live-llm` | Requires LM Studio, llama.cpp, Ollama, or a hosted model key. | No, manual/instructor only |
 
 The repo includes `tests/fake_openai_server.py`, a deterministic
