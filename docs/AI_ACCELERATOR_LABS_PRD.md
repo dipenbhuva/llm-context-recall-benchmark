@@ -84,6 +84,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-010 | Done | Add full lab workbook and instructor runbook | `labs/*.md`, `README.md`, `tests/test_lab_docs.py` | Course can be run end to end from the repo. |
 | PR-011 | Done | Add deterministic mock LLM server | `tests/fake_openai_server.py`, `tests/test_fake_openai_server.py`, docs | `mock-llm` runtime tests exercise the full HTTP/run/dump path without a real model. |
 | PR-012 | Done | Add result comparison CLI | `bench/compare.py`, `bench.py`, `fixtures/results/compare_*.json`, tests/docs | Students can compare two run dumps for prompt/model A/B reports. |
+| PR-013 | Done | Add lab runtime check runner | `scripts/run_lab_runtime_checks.py`, `tests/test_runtime_checks.py`, docs | Instructors can run deterministic lab checks from one command and archive a JSON report. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -850,6 +851,19 @@ JSONs.
 | PR-012-RT-01 | `ci` | Comparison fixtures exist | `python bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json >/tmp/compare.txt` | Prints aggregate metric deltas and per-function matched/hallucination deltas. | `/tmp/compare.txt` |
 | PR-012-RT-02 | `ci` | `/tmp/compare.txt` exists from PR-012-RT-01 | `rg "Primary matched" /tmp/compare.txt && rg "send_head" /tmp/compare.txt && rg "pass no -> yes" /tmp/compare.txt` | Comparison output includes report-ready evidence. | stdout |
 | PR-012-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_compare_cli.py` | Compare CLI regression passes. | none |
+
+### PR-013 Runtime Tests
+
+These tests make the deterministic runtime matrix easy to rerun before class,
+after dependency changes, or in CI.
+
+| ID | Type | Setup | Command | Expected | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| PR-013-RT-01 | `ci` | Test environment active | `python scripts/run_lab_runtime_checks.py --list` | Prints available runtime check IDs and types. | stdout |
+| PR-013-RT-02 | `ci` | Test environment active | `python scripts/run_lab_runtime_checks.py --only PR-012-RT-01 --json /tmp/lab-runtime-report.json` | Runs one check, exits zero, and writes JSON. | `/tmp/lab-runtime-report.json` |
+| PR-013-RT-03 | `local-no-llm` | Test environment active | `python scripts/run_lab_runtime_checks.py --skip-mock --json /tmp/lab-runtime-report.json` | All deterministic no-model checks pass. | `/tmp/lab-runtime-report.json` |
+| PR-013-RT-04 | `mock-llm` | Test environment active | `python scripts/run_lab_runtime_checks.py --json /tmp/lab-runtime-report.json` | All deterministic checks including fake HTTP model pass. | `/tmp/lab-runtime-report.json` |
+| PR-013-RT-05 | `ci` | Test environment active | `uv run pytest tests/test_runtime_checks.py` | Runtime-check runner regression passes. | none |
 
 ## Shared Verification Commands
 

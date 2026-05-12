@@ -19,6 +19,12 @@ OpenAI-compatible server:
 uv run python tests/fake_openai_server.py --port 8765 --response-file fixtures/responses/send_head_perfect.txt
 ```
 
+To rerun the deterministic lab runtime checks from one command:
+
+```bash
+uv run python scripts/run_lab_runtime_checks.py --json /tmp/lab-runtime-report.json
+```
+
 ## Lab Sequence
 
 1. `01_ground_truth_extraction.md` — inspect extracted functions and expected lines.

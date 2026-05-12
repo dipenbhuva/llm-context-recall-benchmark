@@ -232,6 +232,9 @@ python3 bench.py rescore results/http_server__qwen36-35b.json
 # Compare two result dumps for A/B reports
 python3 bench.py compare fixtures/results/compare_baseline.json fixtures/results/compare_candidate.json
 
+# Run deterministic lab runtime checks
+python3 scripts/run_lab_runtime_checks.py --json /tmp/lab-runtime-report.json
+
 # Build Plotly dashboards comparing every run in results/
 python3 analysis/visualize.py
 # -> analysis/charts/<corpus>.html + analysis/charts/index.html
@@ -296,6 +299,7 @@ Keep temperature at 0. Default `max_tokens=6000` to leave room for reasoning mod
 - `bench/runner.py` — orchestration: prompt assembly, query, score, dump
 - `analysis/visualize.py` — builds Plotly HTML dashboards from `results/*.json`
   (see [`analysis/VIZ_README.md`](analysis/VIZ_README.md) for chart-by-chart details)
+- `scripts/run_lab_runtime_checks.py` — deterministic runtime checks for labs
 - `smoke_test.py` — end-to-end sanity check without an LLM
 - `labs/README.md` — student lab sequence for learning this benchmark end to end
 - `docs/AI_ACCELERATOR_LABS_PRD.md` — PR-sized roadmap for building the

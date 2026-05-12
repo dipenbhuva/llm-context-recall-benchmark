@@ -25,6 +25,7 @@ No-LLM setup:
 uv venv --python 3.11
 uv sync --dev
 uv run pytest
+uv run python scripts/run_lab_runtime_checks.py --json /tmp/lab-runtime-report.json
 ```
 
 No-LLM teaching path:
@@ -74,6 +75,7 @@ uv run python analysis/visualize.py
 - No-LLM labs complete in a few minutes.
 - Mock-LLM runs print `=== send_head`, `[PASS]`, and write `/tmp/fake-run.json`.
 - Compare runs print aggregate and per-function deltas.
+- Runtime check runner writes `/tmp/lab-runtime-report.json`.
 - Live-model labs produce result JSON under `results/`.
 - Visualization writes dashboards under `analysis/charts/`.
 
@@ -91,6 +93,7 @@ short final model report.
 ## Verification checklist
 
 - The instructor can run `uv run pytest`.
+- The instructor can run `uv run python scripts/run_lab_runtime_checks.py`.
 - The instructor can complete the no-LLM path.
 - The instructor can run the mock-LLM path before using a real model.
 - Live-model prerequisites are clear before class starts.
