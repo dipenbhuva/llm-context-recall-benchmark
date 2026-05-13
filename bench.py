@@ -397,6 +397,23 @@ def cmd_summarize(args: argparse.Namespace) -> int:
     return 0 if summaries else 1
 
 
+# --- depth ----------------------------------------------------------------
+
+
+def cmd_depth(args: argparse.Namespace) -> int:
+    """Analyze recall by source-file depth."""
+    from bench.depth import load_depth_rows, render_depth, render_depth_json
+
+    path = Path(args.dump)
+    rows = load_depth_rows(path)
+    print(render_depth(path, rows))
+    if args.json:
+        json_path = Path(args.json)
+        json_path.parent.mkdir(parents=True, exist_ok=True)
+        json_path.write_text(render_depth_json(rows), encoding="utf-8")
+    return 0 if rows else 1
+
+
 # --- argparse -------------------------------------------------------------
 
 
@@ -565,6 +582,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_sum.add_argument("--format", choices=("table", "csv", "json"), default="table")
     p_sum.add_argument("--out", help="write summary to this path")
     p_sum.set_defaults(func=cmd_summarize)
+
+    # --- depth -------------------------------------------------------------
+    p_depth = sub.add_parser("depth", help="analyze recall by source-file depth")
+    p_depth.add_argument("dump", help="result JSON to analyze")
+    p_depth.add_argument("--json", help="write depth analysis as JSON")
+    p_depth.set_defaults(func=cmd_depth)
 
     return p
 

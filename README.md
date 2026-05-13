@@ -244,6 +244,9 @@ python3 bench.py report fixtures/results/compare_candidate.json --baseline fixtu
 # Export aggregate result summaries
 python3 bench.py summarize fixtures/results --format csv --out /tmp/run-summary.csv
 
+# Analyze recall by source-file depth
+python3 bench.py depth fixtures/results/compare_candidate.json --json /tmp/depth-analysis.json
+
 # Run deterministic lab runtime checks
 python3 scripts/run_lab_runtime_checks.py --json /tmp/lab-runtime-report.json
 
@@ -307,6 +310,7 @@ Keep temperature at 0. Default `max_tokens=6000` to leave room for reasoning mod
 - `bench/client.py` — tiny OpenAI-compatible client
 - `bench/compare.py` — result JSON comparison for prompt/model A/B reports
 - `bench/diagnose.py` — failure taxonomy summaries for result JSON
+- `bench/depth.py` — recall-by-source-depth analysis from result JSON
 - `bench/model_report.py` — Markdown model report generation from result JSON
 - `bench/summary.py` — machine-readable aggregate result summaries
 - `bench/validate.py` — result JSON contract and lineage validation

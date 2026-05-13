@@ -311,6 +311,19 @@ def build_checks(work_dir: Path) -> list[RuntimeCheck]:
             stdout_contains=("Summary written to",),
             required_artifacts=(work_dir / "run-summary.csv",),
         ),
+        RuntimeCheck(
+            "PR-019-RT-01",
+            "ci",
+            "Analyze recall by source depth",
+            command_runner(
+                "bench.py", "depth",
+                "fixtures/results/compare_candidate.json",
+                "--json", work_dir / "depth-analysis.json",
+                artifacts=[work_dir / "depth-analysis.json"],
+            ),
+            stdout_contains=("DEPTH ANALYSIS", "middle", "send_head"),
+            required_artifacts=(work_dir / "depth-analysis.json",),
+        ),
     ]
 
 

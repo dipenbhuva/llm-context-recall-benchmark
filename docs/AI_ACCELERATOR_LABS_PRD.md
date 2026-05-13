@@ -90,6 +90,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-016 | Done | Add Markdown model report generator | `bench/model_report.py`, `bench.py`, `tests/test_model_report_cli.py`, docs | Students can generate a production-style model report from result JSON. |
 | PR-017 | Done | Add failure diagnosis CLI | `bench/diagnose.py`, `bench.py`, `tests/test_diagnose_cli.py`, docs | Students can classify result failures into production-relevant categories. |
 | PR-018 | Done | Add result summary export CLI | `bench/summary.py`, `bench.py`, `tests/test_summary_cli.py`, docs | Students and CI can export aggregate result metrics as table, CSV, or JSON. |
+| PR-019 | Done | Add depth analysis CLI | `bench/depth.py`, `bench.py`, `tests/test_depth_cli.py`, docs | Students can analyze recall by source-file depth without opening the HTML dashboard. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -925,6 +926,16 @@ tracking.
 | PR-018-RT-02 | `ci` | `/tmp/run-summary.csv` exists | `rg "fixture-candidate|fake-responses|recall_pct" /tmp/run-summary.csv` | CSV contains expected models and columns. | stdout |
 | PR-018-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_summary_cli.py` | Summary CLI regression passes. | none |
 
+### PR-019 Runtime Tests
+
+These tests make source-position effects visible without the HTML dashboard.
+
+| ID | Type | Setup | Command | Expected | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| PR-019-RT-01 | `ci` | Fixture result exists and source file is available | `python bench.py depth fixtures/results/compare_candidate.json --json /tmp/depth-analysis.json` | Prints depth buckets and writes JSON. | `/tmp/depth-analysis.json` |
+| PR-019-RT-02 | `ci` | `/tmp/depth-analysis.json` exists | `rg "middle|send_head|list_directory" /tmp/depth-analysis.json` | Depth JSON includes expected bucket and functions. | stdout |
+| PR-019-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_depth_cli.py` | Depth CLI regression passes. | none |
+
 ## Shared Verification Commands
 
 These commands should remain valid as the lab buildout progresses.
@@ -963,6 +974,9 @@ python bench.py report fixtures/results/compare_candidate.json --baseline fixtur
 
 # Result summary export, after PR-018
 python bench.py summarize fixtures/results --format csv --out /tmp/run-summary.csv
+
+# Depth analysis, after PR-019
+python bench.py depth fixtures/results/compare_candidate.json --json /tmp/depth-analysis.json
 
 # Visualization, after at least one result JSON exists
 python analysis/visualize.py
