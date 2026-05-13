@@ -91,6 +91,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-017 | Done | Add failure diagnosis CLI | `bench/diagnose.py`, `bench.py`, `tests/test_diagnose_cli.py`, docs | Students can classify result failures into production-relevant categories. |
 | PR-018 | Done | Add result summary export CLI | `bench/summary.py`, `bench.py`, `tests/test_summary_cli.py`, docs | Students and CI can export aggregate result metrics as table, CSV, or JSON. |
 | PR-019 | Done | Add depth analysis CLI | `bench/depth.py`, `bench.py`, `tests/test_depth_cli.py`, docs | Students can analyze recall by source-file depth without opening the HTML dashboard. |
+| PR-020 | Done | Add submission artifact bundler | `bench/bundle.py`, `bench.py`, `tests/test_bundle_cli.py`, docs | Students can package report, validation, diagnosis, summary, and source results for review. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -936,6 +937,16 @@ These tests make source-position effects visible without the HTML dashboard.
 | PR-019-RT-02 | `ci` | `/tmp/depth-analysis.json` exists | `rg "middle|send_head|list_directory" /tmp/depth-analysis.json` | Depth JSON includes expected bucket and functions. | stdout |
 | PR-019-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_depth_cli.py` | Depth CLI regression passes. | none |
 
+### PR-020 Runtime Tests
+
+These tests package the final review artifacts students should submit.
+
+| ID | Type | Setup | Command | Expected | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| PR-020-RT-01 | `ci` | Comparison fixtures exist | `python bench.py bundle fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out-dir /tmp/submission-bundle` | Writes a bundle directory with report, summary, validation, diagnosis, depth, copied results, and manifest. | `/tmp/submission-bundle` |
+| PR-020-RT-02 | `ci` | `/tmp/submission-bundle` exists | `test -f /tmp/submission-bundle/manifest.json && test -f /tmp/submission-bundle/model-report.md && test -f /tmp/submission-bundle/run-summary.csv` | Required bundle files exist. | stdout |
+| PR-020-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_bundle_cli.py` | Bundle CLI regression passes. | none |
+
 ## Shared Verification Commands
 
 These commands should remain valid as the lab buildout progresses.
@@ -977,6 +988,9 @@ python bench.py summarize fixtures/results --format csv --out /tmp/run-summary.c
 
 # Depth analysis, after PR-019
 python bench.py depth fixtures/results/compare_candidate.json --json /tmp/depth-analysis.json
+
+# Submission bundle, after PR-020
+python bench.py bundle fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out-dir /tmp/submission-bundle
 
 # Visualization, after at least one result JSON exists
 python analysis/visualize.py

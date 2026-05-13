@@ -414,6 +414,29 @@ def cmd_depth(args: argparse.Namespace) -> int:
     return 0 if rows else 1
 
 
+# --- bundle ---------------------------------------------------------------
+
+
+def cmd_bundle(args: argparse.Namespace) -> int:
+    """Create a reviewable artifact bundle from a result JSON."""
+    from bench.bundle import create_bundle, render_bundle_result
+    from bench.model_report import ReportPolicy
+
+    artifacts = create_bundle(
+        Path(args.dump),
+        Path(args.out_dir),
+        baseline_path=Path(args.baseline) if args.baseline else None,
+        policy=ReportPolicy(
+            min_recall=args.min_recall,
+            max_hallucinated=args.max_hallucinated,
+            max_errors=args.max_errors,
+            min_functions=args.min_functions,
+        ),
+    )
+    print(render_bundle_result(Path(args.out_dir), artifacts))
+    return 0
+
+
 # --- argparse -------------------------------------------------------------
 
 
@@ -588,6 +611,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_depth.add_argument("dump", help="result JSON to analyze")
     p_depth.add_argument("--json", help="write depth analysis as JSON")
     p_depth.set_defaults(func=cmd_depth)
+
+    # --- bundle ------------------------------------------------------------
+    p_bundle = sub.add_parser("bundle", help="create a reviewable result artifact bundle")
+    p_bundle.add_argument("dump", help="candidate result JSON")
+    p_bundle.add_argument("--baseline", help="optional baseline result JSON")
+    p_bundle.add_argument("--out-dir", required=True, help="directory to write bundle artifacts")
+    p_bundle.add_argument("--min-recall", type=float, default=0.80)
+    p_bundle.add_argument("--max-hallucinated", type=int, default=0)
+    p_bundle.add_argument("--max-errors", type=int, default=0)
+    p_bundle.add_argument("--min-functions", type=int, default=8)
+    p_bundle.set_defaults(func=cmd_bundle)
 
     return p
 

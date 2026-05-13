@@ -35,6 +35,7 @@ uv run python bench.py compare fixtures/results/compare_baseline.json fixtures/r
 uv run python bench.py report fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out /tmp/model-report.md
 uv run python bench.py summarize fixtures/results --format csv --out /tmp/run-summary.csv
 uv run python bench.py depth fixtures/results/compare_candidate.json --json /tmp/depth-analysis.json
+uv run python bench.py bundle fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out-dir /tmp/submission-bundle
 uv run python analysis/visualize.py --results-dir fixtures/results --output-dir /tmp/lab-charts
 open /tmp/lab-charts/index.html
 ```
@@ -49,6 +50,8 @@ open /tmp/lab-charts/index.html
   baseline comparison, and a recommendation.
 - `/tmp/run-summary.csv` contains aggregate metrics for each fixture run.
 - `/tmp/depth-analysis.json` groups recall by source-file depth bucket.
+- `/tmp/submission-bundle` contains the report, copied results, validation,
+  diagnosis, depth analysis, summary CSV, and manifest.
 
 ## Student task
 
@@ -77,5 +80,6 @@ justified. If you edit it manually, keep these sections:
 - You can generate a Markdown model report.
 - You can export aggregate run metrics as CSV.
 - You can produce a depth-sensitivity artifact.
+- You can create a reviewable submission bundle.
 - You can open a dashboard summary.
 - Your report includes a concrete recommendation backed by metrics.

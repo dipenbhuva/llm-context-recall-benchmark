@@ -324,6 +324,28 @@ def build_checks(work_dir: Path) -> list[RuntimeCheck]:
             stdout_contains=("DEPTH ANALYSIS", "middle", "send_head"),
             required_artifacts=(work_dir / "depth-analysis.json",),
         ),
+        RuntimeCheck(
+            "PR-020-RT-01",
+            "ci",
+            "Create a reviewable result artifact bundle",
+            command_runner(
+                "bench.py", "bundle",
+                "fixtures/results/compare_candidate.json",
+                "--baseline", "fixtures/results/compare_baseline.json",
+                "--out-dir", work_dir / "submission-bundle",
+                artifacts=[
+                    work_dir / "submission-bundle" / "manifest.json",
+                    work_dir / "submission-bundle" / "model-report.md",
+                    work_dir / "submission-bundle" / "run-summary.csv",
+                ],
+            ),
+            stdout_contains=("Bundle written to", "model-report.md", "manifest.json"),
+            required_artifacts=(
+                work_dir / "submission-bundle" / "manifest.json",
+                work_dir / "submission-bundle" / "model-report.md",
+                work_dir / "submission-bundle" / "run-summary.csv",
+            ),
+        ),
     ]
 
 

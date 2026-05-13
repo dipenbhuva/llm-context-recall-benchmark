@@ -43,6 +43,7 @@ uv run python bench.py validate fixtures/results/compare_candidate.json --strict
 uv run python bench.py report fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out /tmp/model-report.md
 uv run python bench.py summarize fixtures/results --format csv --out /tmp/run-summary.csv
 uv run python bench.py depth fixtures/results/compare_candidate.json --json /tmp/depth-analysis.json
+uv run python bench.py bundle fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out-dir /tmp/submission-bundle
 uv run python analysis/visualize.py --results-dir fixtures/results --output-dir /tmp/lab-charts
 ```
 
@@ -85,6 +86,7 @@ uv run python analysis/visualize.py
 - Report generation writes `/tmp/model-report.md`.
 - Summary export writes `/tmp/run-summary.csv`.
 - Depth analysis writes `/tmp/depth-analysis.json`.
+- Bundle generation writes `/tmp/submission-bundle`.
 - Runtime check runner writes `/tmp/lab-runtime-report.json`.
 - Live-model labs produce result JSON under `results/`.
 - Visualization writes dashboards under `analysis/charts/`.
