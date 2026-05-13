@@ -89,6 +89,7 @@ Each row below is intended to be a PR-sized unit of work.
 | PR-015 | Done | Add result contract validation | `bench/validate.py`, `bench.py`, `labs/10_result_contract_validation.md`, tests/docs | Students can validate result JSON and enforce schema-v2 lineage metadata. |
 | PR-016 | Done | Add Markdown model report generator | `bench/model_report.py`, `bench.py`, `tests/test_model_report_cli.py`, docs | Students can generate a production-style model report from result JSON. |
 | PR-017 | Done | Add failure diagnosis CLI | `bench/diagnose.py`, `bench.py`, `tests/test_diagnose_cli.py`, docs | Students can classify result failures into production-relevant categories. |
+| PR-018 | Done | Add result summary export CLI | `bench/summary.py`, `bench.py`, `tests/test_summary_cli.py`, docs | Students and CI can export aggregate result metrics as table, CSV, or JSON. |
 
 ## PR-001: Reproducible Python Environment
 
@@ -913,6 +914,17 @@ for debugging and deployment review.
 | PR-017-RT-02 | `ci` | Fake-response result fixture exists | `python bench.py diagnose fixtures/results/send_head_fake_results.json --json /tmp/diagnosis.json` | Writes machine-readable diagnosis entries. | `/tmp/diagnosis.json` |
 | PR-017-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_diagnose_cli.py` | Diagnosis CLI regression passes. | none |
 
+### PR-018 Runtime Tests
+
+These tests export aggregate result metrics for grading, CI, and cohort-level
+tracking.
+
+| ID | Type | Setup | Command | Expected | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| PR-018-RT-01 | `ci` | Fixture result directory exists | `python bench.py summarize fixtures/results --format csv --out /tmp/run-summary.csv` | Writes a CSV with one row per usable result JSON. | `/tmp/run-summary.csv` |
+| PR-018-RT-02 | `ci` | `/tmp/run-summary.csv` exists | `rg "fixture-candidate|fake-responses|recall_pct" /tmp/run-summary.csv` | CSV contains expected models and columns. | stdout |
+| PR-018-RT-03 | `ci` | Test environment active | `uv run pytest tests/test_summary_cli.py` | Summary CLI regression passes. | none |
+
 ## Shared Verification Commands
 
 These commands should remain valid as the lab buildout progresses.
@@ -948,6 +960,9 @@ python bench.py validate fixtures/results/compare_candidate.json --strict
 
 # Model report, after PR-016
 python bench.py report fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out /tmp/model-report.md
+
+# Result summary export, after PR-018
+python bench.py summarize fixtures/results --format csv --out /tmp/run-summary.csv
 
 # Visualization, after at least one result JSON exists
 python analysis/visualize.py

@@ -378,6 +378,25 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
     return 0
 
 
+# --- summarize ------------------------------------------------------------
+
+
+def cmd_summarize(args: argparse.Namespace) -> int:
+    """Summarize one or more result JSON files as table, CSV, or JSON."""
+    from bench.summary import load_summaries, render_summaries
+
+    summaries = load_summaries([Path(path) for path in args.paths])
+    rendered = render_summaries(summaries, args.format)
+    if args.out:
+        out_path = Path(args.out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(rendered, encoding="utf-8")
+        print(f"Summary written to {out_path}")
+    else:
+        print(rendered, end="")
+    return 0 if summaries else 1
+
+
 # --- argparse -------------------------------------------------------------
 
 
@@ -539,6 +558,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_diag.add_argument("dump", help="result JSON to diagnose")
     p_diag.add_argument("--json", help="write diagnosis entries as JSON")
     p_diag.set_defaults(func=cmd_diagnose)
+
+    # --- summarize ---------------------------------------------------------
+    p_sum = sub.add_parser("summarize", help="summarize result JSON files")
+    p_sum.add_argument("paths", nargs="+", help="result JSON file(s) or directory/directories")
+    p_sum.add_argument("--format", choices=("table", "csv", "json"), default="table")
+    p_sum.add_argument("--out", help="write summary to this path")
+    p_sum.set_defaults(func=cmd_summarize)
 
     return p
 

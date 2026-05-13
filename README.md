@@ -241,6 +241,9 @@ python3 bench.py diagnose fixtures/results/send_head_fake_results.json
 # Generate a Markdown model report
 python3 bench.py report fixtures/results/compare_candidate.json --baseline fixtures/results/compare_baseline.json --out /tmp/model-report.md
 
+# Export aggregate result summaries
+python3 bench.py summarize fixtures/results --format csv --out /tmp/run-summary.csv
+
 # Run deterministic lab runtime checks
 python3 scripts/run_lab_runtime_checks.py --json /tmp/lab-runtime-report.json
 
@@ -305,6 +308,7 @@ Keep temperature at 0. Default `max_tokens=6000` to leave room for reasoning mod
 - `bench/compare.py` — result JSON comparison for prompt/model A/B reports
 - `bench/diagnose.py` — failure taxonomy summaries for result JSON
 - `bench/model_report.py` — Markdown model report generation from result JSON
+- `bench/summary.py` — machine-readable aggregate result summaries
 - `bench/validate.py` — result JSON contract and lineage validation
 - `bench/scorer.py` — LCS alignment, line classification, pass/fail
 - `bench/report.py` — ANSI color rendering

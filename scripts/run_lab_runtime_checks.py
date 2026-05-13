@@ -297,6 +297,20 @@ def build_checks(work_dir: Path) -> list[RuntimeCheck]:
                 "format_or_wrong_span",
             ),
         ),
+        RuntimeCheck(
+            "PR-018-RT-01",
+            "ci",
+            "Export result summaries as CSV",
+            command_runner(
+                "bench.py", "summarize",
+                "fixtures/results",
+                "--format", "csv",
+                "--out", work_dir / "run-summary.csv",
+                artifacts=[work_dir / "run-summary.csv"],
+            ),
+            stdout_contains=("Summary written to",),
+            required_artifacts=(work_dir / "run-summary.csv",),
+        ),
     ]
 
 
