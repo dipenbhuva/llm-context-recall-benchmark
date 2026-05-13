@@ -308,8 +308,7 @@ python bench.py run --file fixtures/synthetic_recall.py --model qwen36-35b -k 16
 - `configs/corpora/synthetic_recall.toml`
 - `tests/test_synthetic_generator.py`
 
-The student lab page is deferred to PR-010 so the workbook can use a single
-consistent lab format.
+The generated corpus is covered in `labs/04_synthetic_recall.md`.
 
 ### Acceptance Criteria
 
@@ -427,8 +426,7 @@ are skipped silently after the first occurrence.
 - `configs/corpora/multi_file_duplicates.toml`
 - `tests/test_duplicate_extraction.py`
 
-The student lab page is deferred to PR-010 so the workbook can use a single
-consistent lab format.
+The duplicate-name workflow is covered in `labs/06_duplicate_names.md`.
 
 ### Acceptance Criteria
 
@@ -473,8 +471,7 @@ Teach scoring mechanics without requiring model access.
 - `fixtures/results/send_head_fake_results.json`
 - `tests/test_rescore_fixtures.py`
 
-The student lab page is deferred to PR-010 so the workbook can use a single
-consistent lab format.
+The rescoring workflow is covered in `labs/07_rescoring_without_llm.md`.
 
 ### Student Flow
 
@@ -647,6 +644,7 @@ labs/
   07_rescoring_without_llm.md
   08_result_lineage.md
   09_final_model_report.md
+  10_result_contract_validation.md
   instructor_runbook.md
 ```
 
@@ -998,16 +996,16 @@ python analysis/visualize.py
 
 ## Lab-Specific Edge Cases To Preserve
 
-| Edge case | Why it matters | Current or future coverage |
+| Edge case | Why it matters | Current coverage |
 | --- | --- | --- |
 | Function has docstring as first body line | The benchmark asks for body lines, not semantic code only. | Existing `http_server.py` functions. |
 | Model emits markdown fences | Real models do this despite instructions. | Existing `_clean_output` in `bench/scorer.py`. |
-| Model truncates after a few lines | Common recall failure. | Existing smoke test and future fake responses. |
+| Model truncates after a few lines | Common recall failure. | Existing smoke test and `fixtures/responses/send_head_truncated.txt`. |
 | Model emits extra correct lines | Should count as bonus, not hallucination. | Existing smoke test. |
-| Model changes indentation | Tests strict vs relaxed scoring. | Existing `--relax-indent`; future lab fixture. |
-| Duplicate function names | Makes function-name recall ambiguous. | Future PR-006. |
-| Similar distractor functions | Tests wrong-span retrieval. | Future PR-005. |
-| Deep functions fail more often | Tests positional recall degradation. | Existing `recall-vs-position` chart. |
+| Model changes indentation | Tests strict vs relaxed scoring. | Existing `--relax-indent` and `fixtures/responses/send_head_indent_changed.txt`. |
+| Duplicate function names | Makes function-name recall ambiguous. | Existing `multi_file_duplicates` corpus and Lab 06. |
+| Similar distractor functions | Tests wrong-span retrieval. | Existing `synthetic_distractors` corpus and Lab 05. |
+| Deep functions fail more often | Tests positional recall degradation. | Existing `recall-vs-position` chart and `bench.py depth`. |
 | Empty model response | Should be ERROR, not recall FAIL. | Existing runner behavior. |
 | Context-too-small server error | Common local model setup issue. | Existing preflight check. |
 
@@ -1028,11 +1026,10 @@ Every implementation PR for these labs should answer:
 - Are all `ci` and `local-no-llm` runtime tests passing?
 - If a test is `mock-llm` or `live-llm`, is that dependency clearly marked?
 
-## Initial Recommended Order
+## Build Order Used
 
-1. PR-001: Fix environment reproducibility first.
-2. PR-002: Add prompt inspection so students can see the core artifact.
-3. PR-007: Add fake-response rescoring so scoring can be taught without GPUs or API keys.
-4. PR-004: Add synthetic corpus generator for controlled recall experiments.
-5. PR-010: Add initial lab workbook pages that point to the working commands.
-6. PR-003, PR-005, PR-006, PR-008, PR-009: Add deeper experiments and reporting.
+1. PR-001 through PR-010 established the runnable lab workbook.
+2. PR-011 through PR-014 added mock-LLM execution, comparison, runtime checks,
+   and CI enforcement.
+3. PR-015 through PR-020 added production-style validation, reporting,
+   diagnosis, summary export, depth analysis, and submission bundling.
